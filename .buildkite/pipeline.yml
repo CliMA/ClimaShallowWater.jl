@@ -32,6 +32,16 @@ steps:
       - label: ":computer: steady state"
         key: "cpu_steadystate"
         command:
-          - julia --color=yes --project -e 'using ClimaShallowWater; ClimaShallowWater.run()' -- --output-dir=output/cpu_steadystate
+          - nsys profile --trace=nvtx --output=output/cpu_steadystate/report julia --color=yes --project -e 'using ClimaShallowWater; ClimaShallowWater.run()' -- --output-dir=output/cpu_steadystate
         artifact_paths:
           - output/cpu_steadystate/*
+
+      - label: ":flower_playing_cards: steady state"
+        key: "gpu_steadystate"
+        command:
+          - nsys profile --trace=nvtx,cuda --output=output/gpu_steadystate/report julia --color=yes --project -e 'using ClimaShallowWater; ClimaShallowWater.run()' -- --output-dir=output/gpu_steadystate
+        artifact_paths:
+          - output/gpu_steadystate/*
+        agents:
+          slurm_gpus: 1
+

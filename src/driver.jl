@@ -66,8 +66,12 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
     s = ArgParseSettings()
 
     @add_arg_table! s begin
+        "--device"
+            help = "Computation device (CPU, CUDA)"
+            arg_type = String
+            default = CUDA.functional() ? "CUDA" : "CPU"
         "--float-type"
-            help = "Floating point type to use"
+            help = "Floating point type (Float32, Float64)"
             eval_arg = true
             default = Float64
         "--panel-size"
@@ -94,13 +98,16 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
             help = "Directory to save output to"
             arg_type = String
             default = "output"
-        "testcase"
+        "--testcase"
             help = "Test case to run"
             eval_arg = true
             default = SteadyStateTest()
     end
     args = parse_args(ARGS, s)
 
+    device = args["device"] == "CUDA" ? ClimaComms.CUDA() : 
+             args["device"] == "CPU" ? ClimaComms.CPU() :
+             error("Unknown device: $(args["device"])")
     testcase = args["testcase"]
     float_type = args["float-type"]
     panel_size = args["panel-size"]
@@ -108,7 +115,7 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
     time_step = args["time-step"]
     time_end = args["time-end"]
 
-    @info "Setting up experiment" testcase float_type panel_size poly_nodes time_step time_end
+    @info "Setting up experiment" device testcase float_type panel_size poly_nodes time_step time_end
 
     space = create_space(
         testcase;
