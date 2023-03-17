@@ -1,13 +1,12 @@
 abstract type AbstractSphereTestCase end
 
 function create_space(
+    context,
     test::AbstractSphereTestCase;
-    device = CUDA.functional() ? ClimaComms.CUDA() : ClimaComms.CPU(),
     float_type =Float64, 
     panel_size=9, 
     poly_nodes=4,
 )
-    context = ClimaComms.SingletonCommsContext(device)
     domain = Domains.SphereDomain(float_type(test.params.R))
     mesh = Meshes.EquiangularCubedSphere(domain, panel_size)
     quad = Spaces.Quadratures.GLL{poly_nodes}()

@@ -36,6 +36,15 @@ steps:
         artifact_paths:
           - output/cpu_steadystate/*
 
+      - label: ":computer: MPI steady state"
+        key: "cpu_mpi_steadystate"
+        command:
+          - srun ./shallowwater --output-dir=output/cpu_mpi_steadystate
+        artifact_paths:
+          - output/cpu_mpi_steadystate/*
+        agents:
+          slurm_ntasks: 4
+
       - label: ":flower_playing_cards: steady state"
         key: "gpu_steadystate"
         command:

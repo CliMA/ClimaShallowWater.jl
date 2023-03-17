@@ -1,6 +1,3 @@
-
-using ArgParse
-
 function setup_integrator(
     space::Spaces.SpectralElementSpace2D, 
     test::AbstractSphereTestCase; 
@@ -16,6 +13,8 @@ function setup_integrator(
 
     FT = Spaces.undertype(space)
 
+    context = space.topology.context
+
     # Solve the ODE
     if output_nsteps > 0
         mkpath(output_dir)
@@ -29,7 +28,9 @@ function setup_integrator(
                 Y = integrator.u
                 t = integrator.t
                 output_file = joinpath(output_dir, "state_$output_n.hdf5")
-                @info "Saving state" n=output_n output_file t
+                if ClimaComms.iamroot(context)
+                    @info "Saving state" n=output_n output_file t
+                end            
                 hdfwriter = InputOutput.HDF5Writer(output_file, space.topology.context)
                 InputOutput.HDF5.write_attribute(hdfwriter.file, "time", t)
                 InputOutput.write!(hdfwriter, "Y" => Y)
@@ -60,6 +61,12 @@ function setup_integrator(
 end
 
 
+function ismpi()
+    # detect common environment variables used by MPI launchers
+    #   PMI_RANK appears to be used by MPICH and srun
+    #   OMPI_COMM_WORLD_RANK appears to be used by OpenMPI
+    return haskey(ENV, "PMI_RANK") || haskey(ENV, "OMPI_COMM_WORLD_RANK")
+end
 function setup_integrator(ARGS::Vector{String}=ARGS)
     CUDA.allowscalar(false)
 
@@ -70,6 +77,10 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
             help = "Computation device (CPU, CUDA)"
             arg_type = String
             default = CUDA.functional() ? "CUDA" : "CPU"
+        "--comms"
+            help = "Communication type (Singleton, MPI)"
+            arg_type = String
+            default = ismpi() ? "MPI" : "Singleton"
         "--float-type"
             help = "Floating point type (Float32, Float64)"
             eval_arg = true
@@ -108,6 +119,13 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
     device = args["device"] == "CUDA" ? ClimaComms.CUDA() : 
              args["device"] == "CPU" ? ClimaComms.CPU() :
              error("Unknown device: $(args["device"])")
+
+    context = args["comms"] == "MPI" ? ClimaCommsMPI.MPICommsContext(device) :
+              args["comms"] == "Singleton" ? ClimaComms.SingletonCommsContext(device) :
+              error("Unknown comms: $(args["comms"])")
+
+    ClimaComms.init(context)
+
     testcase = args["testcase"]
     float_type = args["float-type"]
     panel_size = args["panel-size"]
@@ -117,14 +135,17 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
 
 
     space = create_space(
+        context,
         testcase;
         float_type,
         panel_size,
         poly_nodes,
     )
-    
-    @info "Setting up experiment" device testcase float_type panel_size poly_nodes time_step time_end approx_resolution=approx_resolution(space) D₄ = hyperdiffusion_coefficient(space, testcase)
 
+    if ClimaComms.iamroot(context)
+        nprocs = ClimaComms.nprocs(context)
+        @info "Setting up experiment" device context testcase float_type panel_size poly_nodes time_step time_end approx_resolution=approx_resolution(space) D₄ = hyperdiffusion_coefficient(space, testcase)
+    end
     setup_integrator(
         space,
         testcase; 

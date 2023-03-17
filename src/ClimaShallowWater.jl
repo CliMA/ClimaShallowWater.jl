@@ -1,12 +1,14 @@
 module ClimaShallowWater
 
-using ClimaComms
+using ClimaComms, ClimaCommsMPI
 using DocStringExtensions
 using LinearAlgebra
 using ClimaTimeSteppers, DiffEqBase
 using DiffEqCallbacks
 import CUDA
 using NVTX
+using ArgParse
+
 
 import ClimaCore:
     Device,
