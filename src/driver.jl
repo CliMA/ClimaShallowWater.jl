@@ -10,8 +10,6 @@ function setup_integrator(
     output_dir="output",
     )
 
-    f = coriolis_field(space, test)
-    h_s = surface_height_field(space, test)
     Y = initial_condition(space, test)
     p = auxiliary_state(Y, test)
     dss!(Y, p) # ensure continuous
@@ -19,29 +17,29 @@ function setup_integrator(
     FT = Spaces.undertype(space)
 
     # Solve the ODE
-    if save_nsteps > 0
-        save_callback = ClimaTimeSteppers.Callbacks.EveryXSimulationSteps(
-            save_nsteps;
+    if output_nsteps > 0
+        mkpath(output_dir)
+        output_n = 0
+        output_callback = ClimaTimeSteppers.Callbacks.EveryXSimulationSteps(
+            output_nsteps;
             atinit = true,
         ) do integrator
+            global n
             NVTX.@range "saving output" begin
-                output_dir = "output"
                 Y = integrator.u
                 t = integrator.t
-                day = floor(Int, t / (60 * 60 * 24))
-                sec = floor(Int, t % (60 * 60 * 24))
-                @info "Saving state" day sec
-                mkpath(output_dir)
-                output_file = joinpath(output_dir, "day$day.$sec.hdf5")
+                output_file = joinpath(output_dir, "state_$output_n.hdf5")
+                @info "Saving state" n=output_n output_file t
                 hdfwriter = InputOutput.HDF5Writer(output_file, space.topology.context)
                 InputOutput.HDF5.write_attribute(hdfwriter.file, "time", t)
                 InputOutput.write!(hdfwriter, "Y" => Y)
                 Base.close(hdfwriter)
+                output_n += 1
             end
             return nothing
         end
     else
-        save_callback = nothing
+        output_callback = nothing
     end
 
     prob =
@@ -55,7 +53,7 @@ function setup_integrator(
         adaptive = false,
         progress_message = (dt, u, p, t) -> t,
         internalnorm = (u, t) -> norm(parent(Y)),
-        callback = CallbackSet(save_callback),
+        callback = CallbackSet(output_callback),
     )
 
     return integrator
@@ -88,10 +86,14 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
             help = "End time (seconds)"
             arg_type = Float64
             default = Float64(60*60*24*2)
-        "--save-nsteps"
+        "--output-nsteps"
             help = "Number of time steps between saving output"
             arg_type = Integer
             default = 5
+        "--output-dir"
+            help = "Directory to save output to"
+            arg_type = String
+            default = "output"
         "testcase"
             help = "Test case to run"
             eval_arg = true
@@ -100,20 +102,28 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
     args = parse_args(ARGS, s)
 
     testcase = args["testcase"]
+    float_type = args["float-type"]
+    panel_size = args["panel-size"]
+    poly_nodes = args["poly-nodes"]
+    time_step = args["time-step"]
+    time_end = args["time-end"]
+
+    @info "Setting up experiment" testcase float_type panel_size poly_nodes time_step time_end
 
     space = create_space(
         testcase;
-        float_type = args["float-type"],
-        panel_size = args["panel-size"],
-        poly_nodes = args["poly-nodes"],
+        float_type,
+        panel_size,
+        poly_nodes,
     )
 
     setup_integrator(
         space, 
         testcase; 
-        time_step = args["time-step"],
-        time_end = args["time-end"],
-        save_nsteps = args["save-nsteps"],
+        time_step,
+        time_end,
+        output_nsteps = args["output-nsteps"],
+        output_dir = args["output-dir"],
     )
 end
 
