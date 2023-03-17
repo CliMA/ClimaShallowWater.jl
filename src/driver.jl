@@ -76,11 +76,11 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
             default = Float64
         "--panel-size"
             help = "Number of elements across each panel"
-            arg_type = Integer
+            arg_type = Int
             default = 8
         "--poly-nodes"
             help = "Number of nodes in each dimension to use in the polynomial approximation. Polynomial degree = poly-nodes - 1."
-            arg_type = Integer
+            arg_type = Int
             default = 4
         "--time-step"
             help = "Time step (seconds)"
@@ -115,7 +115,6 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
     time_step = args["time-step"]
     time_end = args["time-end"]
 
-    @info "Setting up experiment" device testcase float_type panel_size poly_nodes time_step time_end
 
     space = create_space(
         testcase;
@@ -123,9 +122,11 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
         panel_size,
         poly_nodes,
     )
+    
+    @info "Setting up experiment" device testcase float_type panel_size poly_nodes time_step time_end approx_resolution=approx_resolution(space) D₄ = hyperdiffusion_coefficient(space, testcase)
 
     setup_integrator(
-        space, 
+        space,
         testcase; 
         time_step,
         time_end,

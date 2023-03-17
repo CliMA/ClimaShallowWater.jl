@@ -45,3 +45,11 @@ steps:
         agents:
           slurm_gpus: 1
 
+      - label: ":flower_playing_cards: steady state high res"
+        key: "gpu_steadystate_res"
+        command:
+          - nsys profile --trace=nvtx,cuda --output=output/gpu_steadystate_res/report julia --color=yes --project -e 'using ClimaShallowWater; ClimaShallowWater.run()' -- --output-dir=output/gpu_steadystate_res --panel-size=32 --time-step=60
+        artifact_paths:
+          - output/gpu_steadystate_res/*
+        agents:
+          slurm_gpus: 1

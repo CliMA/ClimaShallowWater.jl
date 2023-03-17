@@ -16,6 +16,15 @@ function create_space(
     return space
 end
 
+function approx_resolution(space::Spaces.SpectralElementSpace2D)
+    FT = Spaces.undertype(space)
+    mesh = space.topology.mesh
+    mesh_scale = FT(sqrt(4 * pi / 6)) * mesh.domain.radius / mesh.ne
+
+    quad = Spaces.quadrature_style(space)
+    Nq = Spaces.Quadratures.degrees_of_freedom(quad)
+    return mesh_scale / (Nq - 1)
+end
 
 
 """
@@ -54,6 +63,14 @@ function coriolis_field(space::Spaces.SpectralElementSpace2D, test::AbstractSphe
     return f
 end
 
+function hyperdiffusion_coefficient(space::Spaces.SpectralElementSpace2D, test::AbstractSphereTestCase)
+    FT = Spaces.undertype(space)
+    ν = test.params.ν
+    c = sqrt(test.params.g * test.h0)
+    D₄ = ν * c * approx_resolution(space)^3
+    return FT(D₄)
+end
+
 function auxiliary_state(Y, test::AbstractSphereTestCase)
     h = Y.h
     u = Y.u
@@ -67,7 +84,8 @@ function auxiliary_state(Y, test::AbstractSphereTestCase)
     h_buffer = Spaces.create_dss_buffer(h)
     u_buffer = Spaces.create_dss_buffer(u)
 
-    (; D₄ = FT(test.params.D₄), g = FT(test.params.g), f, h_s, h_buffer, u_buffer)
+    D₄ = hyperdiffusion_coefficient(space, test)
+    (; g = FT(test.params.g), D₄, f, h_s, h_buffer, u_buffer)
 end
 
 function dss!(Y, p)

@@ -14,7 +14,7 @@ Base.@kwdef struct SphericalParameters
     "Gravitational constant"
     g::Float64 = 9.80616
     "Hyperdiffusion coefficient"
-    D₄::Float64 = 1.0e16
+    ν::Float64 = 0.0015
     "angle between the north pole and the center of the top cube panel"
     α::Float64 = 0.0
 end
