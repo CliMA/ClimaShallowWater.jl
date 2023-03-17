@@ -63,7 +63,7 @@ end
 function setup_integrator(ARGS::Vector{String}=ARGS)
     CUDA.allowscalar(false)
 
-    s = ArgParseSettings()
+    s = ArgParseSettings(prog="shallowwater")
 
     @add_arg_table! s begin
         "--device"

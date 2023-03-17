@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+JULIA_PROJECT=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+julia --project=$JULIA_PROJECT -e 'using ClimaShallowWater; ClimaShallowWater.run()' -- "$@"
