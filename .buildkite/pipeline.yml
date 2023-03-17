@@ -32,6 +32,6 @@ steps:
       - label: ":computer: steady state"
         key: "cpu_steadystate"
         command:
-          - julia --color=yes --project -e 'using ClimaShallowWater; ClimaShallowWater.run()' --output-dir=output/cpu_steadystate
+          - julia --color=yes --project -e 'using ClimaShallowWater; ClimaShallowWater.run()' -- --output-dir=output/cpu_steadystate
         artifact_paths:
           - output/cpu_steadystate/*
