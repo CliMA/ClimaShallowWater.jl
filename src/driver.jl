@@ -27,7 +27,7 @@ function setup_integrator(
             NVTX.@range "saving output" begin
                 Y = integrator.u
                 t = integrator.t
-                output_file = joinpath(output_dir, "state_$output_n.hdf5")
+                output_file = joinpath(output_dir, "state_$(string(output_n, pad=6)).hdf5")
                 if ClimaComms.iamroot(context)
                     @info "Saving state" n=output_n output_file t
                 end            
@@ -109,10 +109,9 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
             help = "Directory to save output to"
             arg_type = String
             default = "output"
-        "--testcase"
+        "testcase"
             help = "Test case to run"
-            eval_arg = true
-            default = SteadyStateTest()
+            default = "steadystate"
     end
     args = parse_args(ARGS, s)
 
@@ -126,7 +125,10 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
 
     ClimaComms.init(context)
 
-    testcase = args["testcase"]
+    testcase = args["testcase"] == "steadystate" ? SteadyStateTest() :
+        args["testcase"] == "mountain" ? MountainTest() :
+        args["testcase"] == "rossbyhaurwitz" ? RossbyHaurwitzTest() :
+    error("Unknown testcase: $(args["testcase"])")
     float_type = args["float-type"]
     panel_size = args["panel-size"]
     poly_nodes = args["poly-nodes"]

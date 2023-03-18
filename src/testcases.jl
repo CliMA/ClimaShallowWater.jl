@@ -70,10 +70,6 @@ function initial_velocity(
 )
     FT = Spaces.undertype(space)
     u0 = FT(test.u0)
-    h0 = FT(test.h0)
-    R = FT(test.params.R)
-    Ω = FT(test.params.Ω)
-    g = FT(test.params.g)
     α = FT(test.params.α)
 
     coordinates = Fields.coordinate_field(space)
@@ -117,7 +113,7 @@ Base.@kwdef struct SteadyStateCompactTest{FT, P} <: AbstractSphereTestCase
     xₑ::Float64 = 0.3
 end
 
-function initial_condition(space, test::SteadyStateCompactTest)
+function initial_condition(space::Spaces.SpectralElementSpace2D, test::SteadyStateCompactTest)
     FT = Spaces.undertype(space)
     u0 = FT(test.u0)
     h0 = FT(test.h0)
@@ -246,7 +242,7 @@ function surface_topography(space::Spaces.SpectralElementSpace2D, test::Mountain
     end
 end
 function initial_condition(
-    space,
+    space::Spaces.SpectralElementSpace2D,
     test::MountainTest,
 )
     # steady-state and mountain test cases share the same initial condition
@@ -278,10 +274,8 @@ Base.@kwdef struct RossbyHaurwitzTest <: AbstractSphereTestCase
     "vorticity amplitude parameter (1/sec)"
     K::Float64 = 7.848e-6
 end
-RossbyHaurwitzTest(α::FT) where {FT} =
-    RossbyHaurwitzTest{FT, PhysicalParameters{FT}}(; α = α)
     
-function initial_condition(space, test::RossbyHaurwitzTest)
+function initial_height(space::Spaces.SpectralElementSpace2D, test::RossbyHaurwitzTest)
     FT = Spaces.undertype(space)
     a = FT(test.a)
     h0 = FT(test.h0)
@@ -291,7 +285,7 @@ function initial_condition(space, test::RossbyHaurwitzTest)
     Ω = FT(test.params.Ω)
     g = FT(test.params.g)
 
-    Y = map(Fields.local_geometry_field(space)) do local_geometry
+    map(Fields.local_geometry_field(space)) do local_geometry
         coord = local_geometry.coordinates
         ϕ = coord.lat
         λ = coord.long
@@ -300,8 +294,7 @@ function initial_condition(space, test::RossbyHaurwitzTest)
             ω / 2 * (2 * Ω + ω) * cosd(ϕ)^2 +
             1 / 4 *
             K^2 *
-            cosd(ϕ)^(2 * a) *
-            ((a + 1) * cosd(ϕ)^2 + (2 * a^2 - a - 2) - 2 * a^2 * cosd(ϕ)^-2)
+            ((a + 1) * cosd(ϕ)^(2 * a + 2) + (2 * a^2 - a - 2) * cosd(ϕ)^(2 * a) - 2 * a^2 * cosd(ϕ)^(2 * a - 2))
         B =
             2 * (Ω + ω) * K / (a + 1) / (a + 2) *
             cosd(ϕ)^a *
@@ -311,23 +304,38 @@ function initial_condition(space, test::RossbyHaurwitzTest)
         h =
             h0 +
             (R^2 * A + R^2 * B * cosd(a * λ) + R^2 * C * cosd(2 * a * λ)) / g
+    end
+end
+function initial_velocity(space::Spaces.SpectralElementSpace2D, test::RossbyHaurwitzTest)
+    FT = Spaces.undertype(space)
+    a = FT(test.a)
+    h0 = FT(test.h0)
+    ω = FT(test.ω)
+    K = FT(test.K)
+    R = FT(test.params.R)
+    Ω = FT(test.params.Ω)
+    g = FT(test.params.g)
 
+    map(Fields.local_geometry_field(space)) do local_geometry
+        coord = local_geometry.coordinates
+        ϕ = coord.lat
+        λ = coord.long
+
+  
         uλ =
             R * ω * cosd(ϕ) +
             R * K * cosd(ϕ)^(a - 1) * (a * sind(ϕ)^2 - cosd(ϕ)^2) * cosd(a * λ)
         uϕ = -R * K * a * cosd(ϕ)^(a - 1) * sind(ϕ) * sind(a * λ)
 
 
-        u = Geometry.transform(
+        Geometry.transform(
             Geometry.Covariant12Axis(),
             Geometry.UVVector(uλ, uϕ),
             local_geometry,
         )
-        return (h = h, u = u)
     end
-    return Y
 end
-    
+            
 
 
 """
@@ -372,7 +380,7 @@ Base.@kwdef struct BarotropicInstabilityTest{FT, P} <: AbstractSphereTestCase
     eₙ::Float64 = exp(-4.0 / (deg2rad(ϕ₁) - deg2rad(ϕ₀))^2)
 end
 
-function initial_condition(space, test::BarotropicInstabilityTest)
+function initial_condition(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest)
     FT = Spaces.undertype(space)
     u_max = FT(test.u_max)
     αₚ = FT(test.αₚ)
