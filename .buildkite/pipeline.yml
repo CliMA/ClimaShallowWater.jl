@@ -33,7 +33,7 @@ steps:
         key: "cpu_steadystate"
         command:
           - nsys profile --trace=nvtx --output=output/cpu_steadystate/report ./shallowwater --output-dir=output/cpu_steadystate
-          - ./create-movie --output-dir=output/cpu_steadystate --filename==output/cpu_steadystate/out.mp4
+          - ./create-movie --output-dir=output/cpu_steadystate --filename=output/cpu_steadystate/out.mp4
         artifact_paths:
           - output/cpu_steadystate/report.*
           - output/cpu_steadystate/out.mp4
@@ -42,7 +42,7 @@ steps:
         key: "cpu_mpi_steadystate"
         command:
           - srun ./shallowwater --output-dir=output/cpu_mpi_steadystate
-          - ./create-movie --output-dir=output/cpu_mpi_steadystate --filename==output/cpu_mpi_steadystate/out.mp4
+          - ./create-movie --output-dir=output/cpu_mpi_steadystate --filename=output/cpu_mpi_steadystate/out.mp4
         artifact_paths:
           - output/cpu_mpi_steadystate/out.mp4
         agents:
@@ -52,7 +52,7 @@ steps:
         key: "gpu_steadystate"
         command:
           - nsys profile --trace=nvtx,cuda --output=output/gpu_steadystate/report ./shallowwater --output-dir=output/gpu_steadystate
-          - ./create-movie --output-dir=output/gpu_steadystate --filename==output/gpu_steadystate/out.mp4
+          - ./create-movie --output-dir=output/gpu_steadystate --filename=output/gpu_steadystate/out.mp4
         artifact_paths:
           - output/gpu_steadystate/report.*
           - output/gpu_steadystate/out.mp4
@@ -63,7 +63,7 @@ steps:
         key: "gpu_rossbyhaurwitz_res"
         command:
           - ./shallowwater --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=60 --time-end=1728000
-          - ./create-movie --output-dir=output/gpu_rossbyhaurwitz_res --filename==output/gpu_rossbyhaurwitz_res/out.mp4
+          - ./create-movie --output-dir=output/gpu_rossbyhaurwitz_res --filename=output/gpu_rossbyhaurwitz_res/out.mp4
         artifact_paths:
           - output/gpu_rossbyhaurwitz_res/out.mp4
         agents:
