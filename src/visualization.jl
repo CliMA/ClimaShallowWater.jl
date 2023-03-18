@@ -1,5 +1,5 @@
 
-using Makie, GLMakie, ClimaCoreMakie
+using Makie, CairoMakie, ClimaCoreMakie
 
 using ClimaCore: InputOutput
 
