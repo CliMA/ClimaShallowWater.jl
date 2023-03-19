@@ -8,6 +8,7 @@ using DiffEqCallbacks
 import CUDA
 using NVTX
 using ArgParse
+using QuadGK
 
 
 import ClimaCore:

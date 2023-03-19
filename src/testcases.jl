@@ -356,7 +356,7 @@ https://doi.org/10.1016/j.jcp.2010.04.044
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct BarotropicInstabilityTest{FT, P} <: AbstractSphereTestCase
+Base.@kwdef struct BarotropicInstabilityTest <: AbstractSphereTestCase
     "Physical parameters"
     params::SphericalParameters = SphericalParameters()
     "maximum zonal velocity"
@@ -380,7 +380,7 @@ Base.@kwdef struct BarotropicInstabilityTest{FT, P} <: AbstractSphereTestCase
     eₙ::Float64 = exp(-4.0 / (deg2rad(ϕ₁) - deg2rad(ϕ₀))^2)
 end
 
-function initial_condition(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest)
+function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest)
     FT = Spaces.undertype(space)
     u_max = FT(test.u_max)
     αₚ = FT(test.αₚ)
@@ -396,7 +396,7 @@ function initial_condition(space::Spaces.SpectralElementSpace2D, test::Barotropi
     g = FT(test.params.g)
     α = FT(test.params.α)
 
-    Y = map(Fields.local_geometry_field(space)) do local_geometry
+    map(Fields.local_geometry_field(space)) do local_geometry
         coord = local_geometry.coordinates
 
         ϕ = coord.lat
@@ -434,6 +434,45 @@ function initial_condition(space::Spaces.SpectralElementSpace2D, test::Barotropi
         # Add height perturbation
         h += h_hat * cosd(ϕ) * exp(-(λ^2 / αₚ^2) - ((ϕ₂ - ϕ)^2 / βₚ^2))
 
+        return h
+    end
+end
+
+function initial_velocity(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest)
+    FT = Spaces.undertype(space)
+    u_max = FT(test.u_max)
+    αₚ = FT(test.αₚ)
+    βₚ = FT(test.βₚ)
+    h0 = FT(test.h0)
+    h_hat = FT(test.h_hat)
+    ϕ₀ = FT(test.ϕ₀)
+    ϕ₁ = FT(test.ϕ₁)
+    ϕ₂ = FT(test.ϕ₂)
+    eₙ = FT(test.eₙ)
+    R = FT(test.params.R)
+    Ω = FT(test.params.Ω)
+    g = FT(test.params.g)
+    α = FT(test.params.α)
+
+    map(Fields.local_geometry_field(space)) do local_geometry
+        coord = local_geometry.coordinates
+
+        ϕ = coord.lat
+        λ = coord.long
+
+        if α == 0.0
+            ϕprime = ϕ
+        else
+            ϕprime = asind(sind(ϕ) * cosd(α) - cosd(ϕ) * cosd(λ) * sind(α))
+        end
+
+        # Set initial state of velocity field
+        uλprime(ϕprime) =
+            (u_max / eₙ) *
+            exp(1.0 / (deg2rad(ϕprime - ϕ₀) * deg2rad(ϕprime - ϕ₁))) *
+            (ϕ₀ < ϕprime < ϕ₁)
+        uϕprime = 0.0
+
         uλ = uλprime(ϕprime)
         uϕ = uϕprime
 
@@ -442,8 +481,5 @@ function initial_condition(space::Spaces.SpectralElementSpace2D, test::Barotropi
             Geometry.UVVector(uλ, uϕ),
             local_geometry,
         )
-
-        return (h = h, u = u)
     end
-    return Y
 end

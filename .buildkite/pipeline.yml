@@ -62,9 +62,19 @@ steps:
       - label: ":flower_playing_cards: Rossby-Haurwitz"
         key: "gpu_rossbyhaurwitz_res"
         command:
-          - ./shallowwater --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=60 --time-end=1728000
+          - ./shallowwater --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=60 --time-end=172800
           - ./create-movie --output-dir=output/gpu_rossbyhaurwitz_res --filename=output/gpu_rossbyhaurwitz_res/out.mp4
         artifact_paths:
           - output/gpu_rossbyhaurwitz_res/out.mp4
+        agents:
+          slurm_gpus: 1
+
+      - label: ":flower_playing_cards: barotropic instability"
+        key: "gpu_barotropicinstability"
+        command:
+          - ./shallowwater barotropicinstability --time-end=1728000 --output-nsteps=20 --output-dir=output/gpu_barotropicinstability
+          - ./create-movie --output-dir=output/gpu_barotropicinstability --filename=output/gpu_barotropicinstability/out.mp4
+        artifact_paths:
+          - output/gpu_barotropicinstability/out.mp4
         agents:
           slurm_gpus: 1

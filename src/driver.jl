@@ -129,7 +129,7 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
     args["testcase"] == "steadystatecompact" ? SteadyStateCompactTest() :
         args["testcase"] == "mountain" ? MountainTest() :
         args["testcase"] == "rossbyhaurwitz" ? RossbyHaurwitzTest() :
-        args["testcase"] == "baroclinic" ? BaroclinicWaveTest() :
+        args["testcase"] == "barotropicinstability" ? BarotropicInstabilityTest() :
     error("Unknown testcase: $(args["testcase"])")
     float_type = args["float-type"]
     panel_size = args["panel-size"]
