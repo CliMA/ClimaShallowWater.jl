@@ -1,8 +1,6 @@
 
 using Makie, CairoMakie, ClimaCoreMakie
 
-using ClimaCore: InputOutput
-
 function create_movie(
     filename::AbstractString,
     output_dir::AbstractString,

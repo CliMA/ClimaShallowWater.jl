@@ -382,7 +382,7 @@ end
 
 function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest)
     # we need to instantiate the initial height field on the CPU so that we can use quadgk
-    initial_height(space, test, ClimaCore.Device.device(space))
+    initial_height(space, test, Device.device(space))
 end
 
 function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest, ::ClimaComms.CUDA)
