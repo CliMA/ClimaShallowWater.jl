@@ -38,7 +38,7 @@ steps:
           - output/cpu_steadystate/report.*
           - output/cpu_steadystate/out.mp4
 
-      - label: ":computer: MPI steady state"
+      - label: ":computer: :mpi: steady state"
         key: "cpu_mpi_steadystate"
         command:
           - srun ./shallowwater --output-dir=output/cpu_mpi_steadystate
@@ -58,6 +58,22 @@ steps:
           - output/gpu_steadystate/out.mp4
         agents:
           slurm_gpus: 1
+
+      - label: ":flower_playing_cards: :mpi: steady state"
+        key: "gpu_mpi_steadystate"
+        command:
+          - >
+            srun --cpu-bind=cores --gpu-bind=single 
+            nsys profile --trace=nvtx,cuda,mpi --mpi-impl=openmpi --output=gpu_mpi_steadystate/report-multi-%q{PMI_RANK} 
+            ./shallowwater --output-dir=output/gpu_mpi_steadystate
+          - ./create-movie --output-dir=output/gpu_mpi_steadystate --filename=output/gpu_mpi_steadystate/out.mp4
+        artifact_paths:
+          - output/gpu_mpi_steadystate/report-multi*
+          - output/gpu_mpi_steadystate/out.mp4
+        agents:
+          slurm_ntasks: 4
+          slurm_gpus_per_task: 1
+          slurm_cpus_per_task: 2
 
       - label: ":flower_playing_cards: Mountain"
         key: "gpu_mountain"
