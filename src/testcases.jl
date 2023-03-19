@@ -381,6 +381,29 @@ Base.@kwdef struct BarotropicInstabilityTest <: AbstractSphereTestCase
 end
 
 function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest)
+    # we need to instantiate the initial height field on the CPU so that we can use quadgk
+    initial_height(space, test, ClimaCore.Device.device(space))
+end
+
+function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest, ::ClimaComms.CUDA)
+    mesh = space.topology.mesh
+    context = space.topology.context
+    if context isa ClimaComms.SingletonCommsContext
+        cpu_context = ClimaComms.SingletonCommsContext(ClimaComms.CPU())
+    elseif context isa ClimaCommsMPI.MPICommsContext
+        cpu_context = ClimaComms.MPICommsContext(ClimaComms.CPU())
+    end
+    cpu_topology = Topologies.Topology2D(cpu_context, mesh)
+    cpu_space = Spaces.SpectralElementSpace2D(cpu_topology, Spaces.quadrature_style(space))
+    cpu_h = initial_height(cpu_space, test)
+    h = zeros(space)
+    copyto!(parent(h), parent(cpu_h))
+    return h
+end
+
+
+
+function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest, ::ClimaComms.CPU)
     FT = Spaces.undertype(space)
     u_max = FT(test.u_max)
     αₚ = FT(test.αₚ)
