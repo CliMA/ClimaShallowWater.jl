@@ -228,7 +228,7 @@ Base.@kwdef struct MountainTest <: AbstractSphereTestCase
     h_s0::Float64 = 2e3
 end
 
-function surface_topography(space::Spaces.SpectralElementSpace2D, test::MountainTest)
+function surface_height_field(space::Spaces.SpectralElementSpace2D, test::MountainTest)
     FT = Spaces.undertype(space)
     a = FT(test.a)
     λc = FT(test.λc)

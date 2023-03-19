@@ -59,6 +59,16 @@ steps:
         agents:
           slurm_gpus: 1
 
+      - label: ":flower_playing_cards: Mountain"
+        key: "gpu_mountain"
+        command:
+          - ./shallowwater --output-dir=output/gpu_mountain --time-end=172800
+          - ./create-movie --output-dir=output/gpu_mountain --filename=output/gpu_mountain/out.mp4
+        artifact_paths:
+          - output/gpu_rossbyhaurwitz_res/out.mp4
+        agents:
+          slurm_gpus: 1
+
       - label: ":flower_playing_cards: Rossby-Haurwitz"
         key: "gpu_rossbyhaurwitz_res"
         command:
