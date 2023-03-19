@@ -103,7 +103,7 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
             default = Float64(60*60*24*2)
         "--output-nsteps"
             help = "Number of time steps between saving output"
-            arg_type = Integer
+            arg_type = Int
             default = 5
         "--output-dir"
             help = "Directory to save output to"
