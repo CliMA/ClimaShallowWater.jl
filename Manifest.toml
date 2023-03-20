@@ -179,11 +179,9 @@ version = "0.3.9"
 
 [[deps.ClimaCore]]
 deps = ["Adapt", "BlockArrays", "CUDA", "ClimaComms", "CubedSphere", "DataStructures", "DiffEqBase", "DocStringExtensions", "ForwardDiff", "GaussQuadrature", "GilbertCurves", "HDF5", "InteractiveUtils", "IntervalSets", "LinearAlgebra", "PkgVersion", "RecursiveArrayTools", "RootSolvers", "Rotations", "SparseArrays", "Static", "StaticArrays", "Statistics", "UnPack"]
-git-tree-sha1 = "5619b2c82c53f08df8b51f7a56cfd1d07e7ef105"
-repo-rev = "57061bfa7288c123ec84cbc2985aacc7fd1ce9b6"
-repo-url = "https://github.com/CliMA/ClimaCore.jl.git"
+git-tree-sha1 = "dfb4fda70a9e0d05ac78f82fb427c1c2760ef8a8"
 uuid = "d414da3d-4745-48bb-8d80-42e94e092884"
-version = "0.10.28"
+version = "0.10.29"
 
 [[deps.ClimaCoreMakie]]
 deps = ["ClimaCore", "Makie"]
@@ -913,9 +911,9 @@ version = "0.20.8"
 
 [[deps.MPICH_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
-git-tree-sha1 = "6494782a9930c138af5388e64b48f096d17b8edb"
+git-tree-sha1 = "d790fbd913f85e8865c55bf4725aff197c5155c8"
 uuid = "7cb0a576-ebde-5e09-9194-50597f1243b4"
-version = "4.1.1+0"
+version = "4.1.1+1"
 
 [[deps.MPIPreferences]]
 deps = ["Libdl", "Preferences"]
@@ -925,9 +923,9 @@ version = "0.1.7"
 
 [[deps.MPItrampoline_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
-git-tree-sha1 = "14fb978c5c64f11243c9de06ba6c20ec2f8a156d"
+git-tree-sha1 = "c79b5e5212ed83bcc02faa1a5c4cdf75267a7885"
 uuid = "f1f71cc9-e9ae-5b93-9b94-4fe0e1ad3748"
-version = "5.2.1+1"
+version = "5.2.1+2"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]

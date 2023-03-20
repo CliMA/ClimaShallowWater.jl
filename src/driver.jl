@@ -125,10 +125,10 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
 
     if context isa ClimaCommsMPI.MPICommsContext && device isa ClimaComms.CUDA
         # assign GPUs based on local rank
-        local_comm = MPI.Comm_split_type(comm, MPI.MPI_COMM_TYPE_SHARED, MPI.Comm_rank(context.mpicomm))
+        local_comm = MPI.Comm_split_type(comm, MPI.COMM_TYPE_SHARED, MPI.Comm_rank(context.mpicomm))
         CUDA.device!(MPI.Comm_rank(local_comm) % length(devices()))
     end
-    
+
     ClimaComms.init(context)
 
     testcase = args["testcase"] == "steadystate" ? SteadyStateTest() :
