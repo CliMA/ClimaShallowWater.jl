@@ -63,7 +63,7 @@ steps:
         key: "gpu_mpi_steadystate"
         command:
           - >
-            srun --cpu-bind=cores --gpu-bind=single 
+            srun --cpu-bind=cores --gpu-bind=per_task:1
             nsys profile --trace=nvtx,cuda,mpi --mpi-impl=openmpi --output=gpu_mpi_steadystate/report-multi-%q{PMI_RANK} 
             ./shallowwater --output-dir=output/gpu_mpi_steadystate
           - ./create-movie --output-dir=output/gpu_mpi_steadystate --filename=output/gpu_mpi_steadystate/out.mp4
