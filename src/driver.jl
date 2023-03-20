@@ -123,13 +123,13 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
               args["comms"] == "Singleton" ? ClimaComms.SingletonCommsContext(device) :
               error("Unknown comms: $(args["comms"])")
 
+    ClimaComms.init(context)
+
     if context isa ClimaCommsMPI.MPICommsContext && device isa ClimaComms.CUDA
         # assign GPUs based on local rank
         local_comm = MPI.Comm_split_type(comm, MPI.COMM_TYPE_SHARED, MPI.Comm_rank(context.mpicomm))
         CUDA.device!(MPI.Comm_rank(local_comm) % length(devices()))
     end
-
-    ClimaComms.init(context)
 
     testcase = args["testcase"] == "steadystate" ? SteadyStateTest() :
         args["testcase"] == "steadystatecompact" ? SteadyStateCompactTest() :
