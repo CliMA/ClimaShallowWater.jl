@@ -110,7 +110,7 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
             arg_type = String
             default = "output"
         "testcase"
-            help = "Test case to run"
+            help = "Test case to run (steadystate / steadystatecompact / mountain / rossbyhaurwitz / barotropicinstability)"
             default = "steadystate"
     end
     args = parse_args(ARGS, s)

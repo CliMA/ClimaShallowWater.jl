@@ -18,4 +18,17 @@ The main driver file is `shallowwater`. Run
 ```sh
 ./shallowwater --help
 ```
-to see the arguments.
+to see the arguments. The driver will automatically make use of CUDA if a GPU is available.
+
+To run with MPI, the driver can be run inside the MPI launcher:
+```sh
+mpiexec ./shallowater [args]
+```
+
+
+## Post-processing
+
+To generate an animation of the resulting output, use
+```sh
+./create-movie
+```
