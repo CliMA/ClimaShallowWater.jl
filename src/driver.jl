@@ -123,6 +123,12 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
               args["comms"] == "Singleton" ? ClimaComms.SingletonCommsContext(device) :
               error("Unknown comms: $(args["comms"])")
 
+    if context isa ClimaCommsMPI.MPICommsContext && device isa ClimaComms.CUDA
+        # assign GPUs based on local rank
+        local_comm = MPI.Comm_split_type(comm, MPI.MPI_COMM_TYPE_SHARED, MPI.Comm_rank(context.mpicomm))
+        CUDA.device!(MPI.Comm_rank(local_comm) % length(devices()))
+    end
+    
     ClimaComms.init(context)
 
     testcase = args["testcase"] == "steadystate" ? SteadyStateTest() :
@@ -130,7 +136,7 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
         args["testcase"] == "mountain" ? MountainTest() :
         args["testcase"] == "rossbyhaurwitz" ? RossbyHaurwitzTest() :
         args["testcase"] == "barotropicinstability" ? BarotropicInstabilityTest() :
-    error("Unknown testcase: $(args["testcase"])")
+        error("Unknown testcase: $(args["testcase"])")
     float_type = args["float-type"]
     panel_size = args["panel-size"]
     poly_nodes = args["poly-nodes"]
@@ -165,5 +171,3 @@ function run(ARGS::Vector{String}=ARGS)
     integrator = setup_integrator(ARGS)
     solve!(integrator)
 end
-
-

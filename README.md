@@ -24,6 +24,9 @@ To run with MPI, the driver can be run inside the MPI launcher:
 ```sh
 mpiexec ./shallowater [args]
 ```
+Note that using CUDA + MPI will require a CUDA-aware MPI installation.
+
+See [MPI.jl: Configuration](https://juliaparallel.org/MPI.jl/stable/configuration/) on how to configure MPI.
 
 
 ## Post-processing
