@@ -28,6 +28,5 @@ import ClimaCore:
 include("common.jl")
 include("testcases.jl")
 include("driver.jl")
-include("visualization.jl")
 
 end # module ClimaShallowWater
