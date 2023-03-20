@@ -9,6 +9,7 @@ import CUDA
 using NVTX
 using ArgParse
 using QuadGK
+using MPI
 
 
 import ClimaCore:
