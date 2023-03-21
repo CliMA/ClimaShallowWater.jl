@@ -23,15 +23,13 @@ end
 """
     SteadyStateTest()
 
-The first one, called "steady_state", reproduces Test Case 2 in Williamson et al,
-"A standard test set for numerical approximations to the shallow water
-equations in spherical geometry", 1992. This test case gives the steady-state
-solution to the non-linear shallow water equations. It consists of solid
-body rotation or zonal flow with the corresponding geostrophic height field.
-This can be run with an angle α that represents the angle between the north
-pole and the center of the top cube panel.
+Test case 2 of [Williamson1992](@cite).
 
-https://doi.org/10.1016/S0021-9991(05)80016-6
+ This test case gives the steady-state solution to the non-linear shallow water
+equations. It consists of solid body rotation or zonal flow with the
+corresponding geostrophic height field. This can be run with an angle α that
+represents the angle between the north pole and the center of the top cube
+panel.
 
 # Fields
 $(DocStringExtensions.FIELDS)
@@ -88,12 +86,11 @@ end
 """
     SteadyStateCompactTest()
 
-A second one, called "steady_state_compact", reproduces Test Case 3 in the same
-reference paper. This test case gives the steady-state solution to the
+Test case 3 of [Williamson1992](@cite).
+
+This test case gives the steady-state solution to the
 non-linear shallow water equations with nonlinear zonal geostrophic flow
 with compact support.
-
-https://doi.org/10.1016/S0021-9991(05)80016-6
 
 # Fields
 $(DocStringExtensions.FIELDS)
@@ -199,13 +196,12 @@ end
 """
     MountainTest()
 
-A third one, called "mountain", reproduces Test Case 5 in the same
-reference paper. It represents a zonal flow over an isolated mountain,
+Test case 5 of [Williamson1992](@cite).
+
+It represents a zonal flow over an isolated mountain,
 where the governing equations describe a global steady-state nonlinear
 zonal geostrophic flow, with a corresponding geostrophic height field over
 a non-uniform reference surface h_s.
-
-https://doi.org/10.1016/S0021-9991(05)80016-6
 
 # Fields
 $(DocStringExtensions.FIELDS)
@@ -220,7 +216,7 @@ Base.@kwdef struct MountainTest <: AbstractSphereTestCase
     "radius of conical mountain"
     a::Float64 = 20.0
     "center of mountain long coord, shifted by 180 compared to the paper, 
-    because our λ ∈ [-180, 180] (in the paper it was 270, with λ ∈ [0, 360])"
+    because our ``λ ∈ [-180, 180]`` (in the paper it was 270, with ``λ ∈ [0, 360]``)"
     λc::Float64 = 90.0
     "latitude coordinate for center of mountain"
     ϕc::Float64 = 30.0
@@ -253,11 +249,10 @@ end
 """
     RossbyHaurwitzTest <: AbstractSphereTestCase
 
-A fourth one, called "rossby_haurwitz", reproduces Test Case 6 in the same
-reference paper. It represents the solution of the nonlinear barotropic
-vorticity equation on the sphere
+Test case 6 of [Williamson1992](@cite).
 
-https://doi.org/10.1016/S0021-9991(05)80016-6
+It represents the solution of the nonlinear barotropic
+vorticity equation on the sphere
 
 # Fields
 $(DocStringExtensions.FIELDS)
@@ -341,17 +336,12 @@ end
 """
     BarotropicInstabilityTest{FT, P} <: AbstractSphereTestCase
 
-A fifth one, called "barotropic_instability", reproduces the test case in
-Galewsky et al, "An initial-value problem for testing numerical models of
-the global shallow-water equations", 2004 (also in Sec. 7.6 of Ullirch et al,
-"High-order ﬁnite-volume methods for the shallow-water equations on
-the sphere", 2010). This test case consists of a zonal jet with compact
+Test case from [Galewsky2004](@cite) (and also §7.6 of [Ullrich2010](@cite)).
+
+This test case consists of a zonal jet with compact
 support at a latitude of 45°. A small height disturbance is then added,
 which causes the jet to become unstable and collapse into a highly vortical
 structure.
-
-https://doi.org/10.3402/tellusa.v56i5.14436
-https://doi.org/10.1016/j.jcp.2010.04.044
 
 # Fields
 $(DocStringExtensions.FIELDS)
