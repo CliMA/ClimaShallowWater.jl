@@ -1,5 +1,6 @@
 # ClimaShallowWater.jl
 
+[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://CliMA.github.io/ClimaShallowWater.jl/dev/)  
 [![Build status](https://badge.buildkite.com/4c3b1db756d1987ab7920a17579c37142623d356b7b77fe670.svg?branch=main)](https://buildkite.com/clima/climashallowwater-ci)
 
 This is an implementation of the [shallow water equations](https://en.wikipedia.org/wiki/Shallow_water_equations) using [ClimaCore.jl](https://github.com/CliMA/ClimaCore.jl).
