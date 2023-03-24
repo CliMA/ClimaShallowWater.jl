@@ -32,7 +32,9 @@ steps:
       - label: ":computer: steady state"
         key: "cpu_steadystate"
         command:
-          - nsys profile --trace=nvtx --output=output/cpu_steadystate/report ./shallowwater --output-dir=output/cpu_steadystate
+          - >
+            nsys profile --trace=nvtx --output=output/cpu_steadystate/report
+            ./shallowwater --output-dir=output/cpu_steadystate
           - ./create-movie --output-dir=output/cpu_steadystate --filename=output/cpu_steadystate/out.mp4
         artifact_paths:
           - output/cpu_steadystate/report.*
@@ -41,17 +43,25 @@ steps:
       - label: ":computer: :mpi: steady state"
         key: "cpu_mpi_steadystate"
         command:
-          - srun ./shallowwater --output-dir=output/cpu_mpi_steadystate
+          - >
+            srun --cpu-bind=cores
+            nsys profile --trace=nvtx,mpi  --mpi-impl=openmpi --output=output/cpu_mpi_steadystate/report-%q{PMI_RANK} 
+            ./shallowwater --output-dir=output/cpu_mpi_steadystate
+          - nsys-mkview output/cpu_mpi_steadystate
+          - nsys-archive output/cpu_mpi_steadystate
           - ./create-movie --output-dir=output/cpu_mpi_steadystate --filename=output/cpu_mpi_steadystate/out.mp4
         artifact_paths:
           - output/cpu_mpi_steadystate/out.mp4
         agents:
           slurm_ntasks: 4
+          slurm_cpus_per_task: 2
 
       - label: ":flower_playing_cards: steady state"
         key: "gpu_steadystate"
         command:
-          - nsys profile --trace=nvtx,cuda --output=output/gpu_steadystate/report ./shallowwater --output-dir=output/gpu_steadystate
+          - >
+            nsys profile --trace=nvtx,cuda --output=output/gpu_steadystate/report
+            ./shallowwater --output-dir=output/gpu_steadystate
           - ./create-movie --output-dir=output/gpu_steadystate --filename=output/gpu_steadystate/out.mp4
         artifact_paths:
           - output/gpu_steadystate/report.*
@@ -64,11 +74,13 @@ steps:
         command:
           - >
             srun --cpu-bind=cores --gpu-bind=per_task:1
-            nsys profile --trace=nvtx,cuda,mpi --mpi-impl=openmpi --output=gpu_mpi_steadystate/report-multi-%q{PMI_RANK} 
+            nsys profile --trace=nvtx,cuda,mpi --mpi-impl=openmpi --output=output/gpu_mpi_steadystate/report-%q{PMI_RANK} 
             ./shallowwater --output-dir=output/gpu_mpi_steadystate
+          - nsys-mkview output/gpu_mpi_steadystate
+          - nsys-archive output/gpu_mpi_steadystate
           - ./create-movie --output-dir=output/gpu_mpi_steadystate --filename=output/gpu_mpi_steadystate/out.mp4
         artifact_paths:
-          - output/gpu_mpi_steadystate/report-multi*
+          - output/gpu_mpi_steadystate/nsys.tar.gz
           - output/gpu_mpi_steadystate/out.mp4
         agents:
           slurm_ntasks: 4
@@ -88,12 +100,19 @@ steps:
       - label: ":flower_playing_cards: Rossby-Haurwitz"
         key: "gpu_rossbyhaurwitz_res"
         command:
-          - ./shallowwater rossbyhaurwitz --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=60 --time-end=172800
+          - ": > print-out-0.log && tail -F print-out-0.log &" # print log in background
+          - >
+            srun --cpu-bind=cores --gpu-bind=per_task:1 --output=print-out-%t.log
+            julia --check-bounds=yes --project -g 2
+            shallowwater rossbyhaurwitz --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=600 --time-end=172800
+          - sleep 1 # give time for log to print
           - ./create-movie --output-dir=output/gpu_rossbyhaurwitz_res --filename=output/gpu_rossbyhaurwitz_res/out.mp4
         artifact_paths:
           - output/gpu_rossbyhaurwitz_res/out.mp4
+          - print-out-*
         agents:
-          slurm_gpus: 1
+          slurm_ntasks: 4
+          slurm_gpus_per_task: 1
 
       - label: ":flower_playing_cards: barotropic instability"
         key: "gpu_barotropicinstability"
