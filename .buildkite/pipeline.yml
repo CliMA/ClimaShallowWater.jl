@@ -1,7 +1,7 @@
 agents:
   queue: central
   slurm_mem: 8G
-  modules: julia/1.8.5 ucx/1.13.1_cuda-11.2 cuda/11.2 openmpi/4.1.5_cuda-11.2 hdf5/1.14.0-ompi415 nsight-systems/2022.2.1
+  modules: julia/1.8.5 ucx/1.13.1_cuda-11.2 cuda/11.2 openmpi/4.1.5_cuda-11.2 hdf5/1.12.2-ompi415 nsight-systems/2023.2.1
 
 env:
   JULIA_LOAD_PATH: "${JULIA_LOAD_PATH}:${BUILDKITE_BUILD_CHECKOUT_PATH}/.buildkite"
@@ -80,6 +80,10 @@ steps:
           - nsys-mkview output/gpu_mpi_steadystate
           - nsys-archive output/gpu_mpi_steadystate
           - ./create-movie --output-dir=output/gpu_mpi_steadystate --filename=output/gpu_mpi_steadystate/out.mp4
+        env:
+          OMPI_MCA_btl_base_verbose: 9
+          OMPI_MCA_pml_base_verbose: 9
+          UCX_LOG_LEVEL: info
         artifact_paths:
           - output/gpu_mpi_steadystate/nsys.tar.gz
           - output/gpu_mpi_steadystate/out.mp4
