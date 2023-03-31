@@ -154,7 +154,7 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
 
     if ClimaComms.iamroot(context)
         nprocs = ClimaComms.nprocs(context)
-        @info "Setting up experiment" device context testcase float_type panel_size poly_nodes time_step time_end approx_resolution=approx_resolution(space) D₄ = hyperdiffusion_coefficient(space, testcase)
+        @info "Setting up experiment" device context nprocs testcase float_type panel_size poly_nodes time_step time_end approx_resolution=approx_resolution(space) D₄ = hyperdiffusion_coefficient(space, testcase)
     end
     setup_integrator(
         space,
