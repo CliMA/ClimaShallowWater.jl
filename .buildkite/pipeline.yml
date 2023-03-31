@@ -74,7 +74,7 @@ steps:
         key: "gpu_mpi_steadystate"
         command:
           - >
-            srun --cpu-bind=cores --gpu-bind=per_task:1
+            srun --cpu-bind=cores --gpu-bind=none
             nsys profile --trace=nvtx,cuda,mpi --mpi-impl=openmpi --output=output/gpu_mpi_steadystate/report-%q{PMI_RANK} 
             ./shallowwater --output-dir=output/gpu_mpi_steadystate
           - nsys-mkview output/gpu_mpi_steadystate
@@ -103,7 +103,7 @@ steps:
         command:
           - ": > print-out-0.log && tail -F print-out-0.log &" # print log in background
           - >
-            srun --cpu-bind=cores --gpu-bind=per_task:1 --output=print-out-%t.log
+            srun --cpu-bind=cores --gpu-bind=none --output=print-out-%t.log
             julia --check-bounds=yes --project -g 2
             shallowwater rossbyhaurwitz --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=600 --time-end=172800
           - sleep 1 # give time for log to print
