@@ -73,17 +73,19 @@ steps:
       - label: ":flower_playing_cards: :mpi: steady state"
         key: "gpu_mpi_steadystate"
         command:
+          - ": > print-out-0.log"
+          - "tail -F print-out-0.log &" # print log in background
           - >
-            srun --cpu-bind=cores --gpu-bind=none
+            srun --cpu-bind=cores --gpu-bind=none --output=output/gpu_mpi_steadystate/out-%t.log
             ./shallowwater --output-dir=output/gpu_mpi_steadystate
-          - nsys-mkview output/gpu_mpi_steadystate
-          - nsys-archive output/gpu_mpi_steadystate
+          - sleep 1 # give time for log to print
           - ./create-movie --output-dir=output/gpu_mpi_steadystate --filename=output/gpu_mpi_steadystate/out.mp4
         env:
           OMPI_MCA_btl_base_verbose: 10
           OMPI_MCA_pml_base_verbose: 10
           UCX_LOG_LEVEL: info
         artifact_paths:
+          - output/gpu_mpi_steadystate/out-*
           - output/gpu_mpi_steadystate/nsys.tar.gz
           - output/gpu_mpi_steadystate/out.mp4
         agents:
