@@ -91,7 +91,7 @@ steps:
       - label: ":flower_playing_cards: Mountain"
         key: "gpu_mountain"
         command:
-          - ./shallowwater mountain --output-dir=output/gpu_mountain --time-end=172800
+          - ./shallowwater Mountain --output-dir=output/gpu_mountain --time-end=172800
           - ./create-movie --output-dir=output/gpu_mountain --filename=output/gpu_mountain/out.mp4
         artifact_paths:
           - output/gpu_mountain/out.mp4
@@ -105,7 +105,7 @@ steps:
           - >
             srun --cpu-bind=cores --gpu-bind=per_task:1 --output=print-out-%t.log
             julia --check-bounds=yes --project -g 2
-            shallowwater rossbyhaurwitz --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=600 --time-end=172800
+            shallowwater RossbyHaurwitz --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=600 --time-end=172800
           - sleep 1 # give time for log to print
           - ./create-movie --output-dir=output/gpu_rossbyhaurwitz_res --filename=output/gpu_rossbyhaurwitz_res/out.mp4
         artifact_paths:
@@ -118,7 +118,7 @@ steps:
       - label: ":flower_playing_cards: barotropic instability"
         key: "gpu_barotropicinstability"
         command:
-          - ./shallowwater barotropicinstability --time-end=1728000 --output-nsteps=20 --output-dir=output/gpu_barotropicinstability
+          - ./shallowwater BarotropicInstability --time-end=1728000 --output-nsteps=20 --output-dir=output/gpu_barotropicinstability
           - ./create-movie --output-dir=output/gpu_barotropicinstability --filename=output/gpu_barotropicinstability/out.mp4
         artifact_paths:
           - output/gpu_barotropicinstability/out.mp4
