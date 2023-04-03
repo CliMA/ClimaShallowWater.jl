@@ -1,0 +1,30 @@
+# Spherical parameters
+[R]
+value = 6.37122e6
+type = "float"
+alias = "R"
+description = "Radius of earth"
+
+["Ω"]
+value = 7.292e-5
+type = "float"
+alias = "Ω"
+description = "Rotation rate of earth"
+
+[g]
+value = 9.80616
+type = "float"
+alias = "g"
+description = "Gravitational constant"
+
+[v]
+value = 0.0015
+type = "float"
+alias = "v"
+description = "Hyperdiffusion coefficient"
+
+["α"]
+value = 0.0
+type = "float"
+alias = "α"
+description = "angle between the north pole and the center of the top cube panel"

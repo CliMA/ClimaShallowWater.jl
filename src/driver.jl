@@ -110,8 +110,10 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
             arg_type = String
             default = "output"
         "testcase"
-            help = "Test case to run (steadystate / steadystatecompact / mountain / rossbyhaurwitz / barotropicinstability)"
-            default = "steadystate"
+            help = "Test case to run (SteadyState / SteadyStateCompact / Mountain / RossbyHaurwitz / BarotropicInstability)"
+            default = "SteadyState"
+        "--toml"
+            arg_type = String
     end
     args = parse_args(ARGS, s)
 
@@ -131,12 +133,20 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
         CUDA.device!(MPI.Comm_rank(local_comm) % length(CUDA.devices()))
     end
 
-    testcase = args["testcase"] == "steadystate" ? SteadyStateTest() :
-        args["testcase"] == "steadystatecompact" ? SteadyStateCompactTest() :
-        args["testcase"] == "mountain" ? MountainTest() :
-        args["testcase"] == "rossbyhaurwitz" ? RossbyHaurwitzTest() :
-        args["testcase"] == "barotropicinstability" ? BarotropicInstabilityTest() :
+    testcase = 
+    if !isnothing(args["toml"])
+        toml_dict = CP.create_toml_dict(Float64, override_file = args["toml"])
+        testcase = getproperty(ClimaShallowWater, Symbol(args["testcase"] * "Test"))
+        construct_paramset(testcase, toml_dict)
+    else 
+        args["testcase"] == "SteadyState" ? SteadyStateTest() :
+        args["testcase"] == "SteadyStateCompact" ? SteadyStateCompactTest() :
+        args["testcase"] == "Mountain" ? MountainTest() :
+        args["testcase"] == "RossbyHaurwitz" ? RossbyHaurwitzTest() :
+        args["testcase"] == "BarotropicInstability" ? BarotropicInstabilityTest() :
         error("Unknown testcase: $(args["testcase"])")
+    end
+
     float_type = args["float-type"]
     panel_size = args["panel-size"]
     poly_nodes = args["poly-nodes"]

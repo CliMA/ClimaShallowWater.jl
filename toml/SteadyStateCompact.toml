@@ -1,0 +1,48 @@
+["ϕᵦ"]
+value = -30
+type = "float"
+alias = "ϕᵦ"
+description = "latitude lower bound for coordinate transformation parameter"
+
+["ϕₑ"]
+value = -90
+type = "float"
+alias = "ϕₑ"
+description = "latitude upper bound for coordinate transformation parameter"
+
+["xₑ"]
+value = 0.3
+type = "float"
+alias = "xₑ"
+description = "velocity perturbation parameter"
+
+# Spherical parameters
+[R]
+value = 6.37122e6
+type = "float"
+alias = "R"
+description = "Radius of earth"
+
+["Ω"]
+value = 7.292e-5
+type = "float"
+alias = "Ω"
+description = "Rotation rate of earth"
+
+[g]
+value = 9.80616
+type = "float"
+alias = "g"
+description = "Gravitational constant"
+
+[v]
+value = 0.0015
+type = "float"
+alias = "v"
+description = "Hyperdiffusion coefficient"
+
+["α"]
+value = 0.0
+type = "float"
+alias = "α"
+description = "angle between the north pole and the center of the top cube panel"

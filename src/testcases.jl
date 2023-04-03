@@ -1,3 +1,13 @@
+import CLIMAParameters as CP
+
+function construct_paramset(testcase::Type{T}, toml_dict) where T <: AbstractSphereTestCase
+    param_names = string.(fieldnames(testcase))
+    parameters = CP.get_parameter_values!(toml_dict, param_names)
+    spherical_parameters = SphericalParameters(toml_dict)
+    SP = typeof(spherical_parameters)
+    T{SP}(;parameters...,  params = spherical_parameters)
+end
+
 """
     SphericalParameters
 
@@ -19,6 +29,11 @@ Base.@kwdef struct SphericalParameters
     α::Float64 = 0.0
 end
 
+function SphericalParameters(toml_dict)
+    param_names = string.(fieldnames(SphericalParameters))
+    parameters = CP.get_parameter_values!(toml_dict, param_names)
+    SphericalParameters(;parameters...)
+end
 
 """
     SteadyStateTest()
@@ -34,9 +49,9 @@ panel.
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct SteadyStateTest <: AbstractSphereTestCase
+Base.@kwdef struct SteadyStateTest{SP} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
+    params::SP = SphericalParameters()
     "advection velocity"
     u0::Float64 = 2 * pi * params.R / (12*60*60*24) # 1 revolution/12 days
     "peak of analytic height field"
@@ -95,9 +110,9 @@ with compact support.
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct SteadyStateCompactTest{FT, P} <: AbstractSphereTestCase
+Base.@kwdef struct SteadyStateCompactTest{SP} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
+    params::SP = SphericalParameters()
     "advection velocity"
     u0::Float64 = 2 * pi * params.R / (12 * 86400)
     "peak of analytic height field"
@@ -206,13 +221,13 @@ a non-uniform reference surface h_s.
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct MountainTest <: AbstractSphereTestCase
+Base.@kwdef struct MountainTest{SP} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
+    params::SP = SphericalParameters()
     "advection velocity"
     u0::Float64 = 20.0
     "peak of analytic height field"
-    h0::Float64 = 5960
+    h0::Float64 = 5960.0
     "radius of conical mountain"
     a::Float64 = 20.0
     "center of mountain long coord, shifted by 180 compared to the paper, 
@@ -257,9 +272,9 @@ vorticity equation on the sphere
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct RossbyHaurwitzTest <: AbstractSphereTestCase
+Base.@kwdef struct RossbyHaurwitzTest{SP} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
+    params::SP = SphericalParameters()
     "velocity amplitude parameter"
     a::Float64 = 4.0
     "peak of analytic height field"
@@ -346,9 +361,9 @@ structure.
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct BarotropicInstabilityTest <: AbstractSphereTestCase
+Base.@kwdef struct BarotropicInstabilityTest{SP} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
+    params::SP = SphericalParameters()
     "maximum zonal velocity"
     u_max::Float64 = 80.0
     "mountain shape parameters"

@@ -1,0 +1,47 @@
+[u_max]
+value = 80.0
+type = "float"
+alias = "u_max"
+description = "maximum zonal velocity"
+
+["αₚ"]
+value = 19.09859
+type = "float"
+alias = "αₚ"
+description = "mountain shape parameters"
+
+["βₚ"]
+value = 3.81971
+type = "float"
+alias = "βₚ"
+description = "mountain shape parameters"
+
+[h0]
+value = 10158.18617
+type = "float"
+alias = "h0"
+description = "peak of balanced height field from Tempest https://github.com/paullric/tempestmodel/blob/master/test/shallowwater_sphere/BarotropicInstabilityTest.cpp#L86"
+
+[h_hat]
+value = 120.0
+type = "float"
+alias = "h_hat"
+description = "local perturbation peak height"
+
+["ϕ₀"]
+value = 25.71428
+type = "float"
+alias = "ϕ₀"
+description = "southern jet boundary"
+
+["ϕ₁"]
+value = 64.28571
+type = "float"
+alias = "ϕ₁"
+description = "northern jet boundary"
+
+["ϕ₂"]
+value = 45.0
+type = "float"
+alias = "ϕ₂"
+description = "height perturbation peak location"

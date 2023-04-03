@@ -1,0 +1,65 @@
+
+[u0]
+value = 20.0
+type = "float"
+alias = "u0"
+description = "peak of analytic height field"
+[h0]
+value = 5960 
+type = "float"
+alias = "h0"
+description = "radius of conical mountain"
+
+[a]
+value = 20.0 
+type = "float"
+alias = "a"
+description = """center of mountain long coord, shifted by 180 compared to the paper, 
+    because our ``λ ∈ [-180, 180]`` (in the paper it was 270, with ``λ ∈ [0, 360]``)"""
+["λc"]
+value = 135
+type = "float"
+alias = "λc"
+description = "latitude coordinate for center of mountain"
+    
+["ϕc"]
+value = 30.0
+type = "float"
+alias = "ϕc"
+description = "mountain peak height"
+
+[h_s0]
+value = 2e3
+type = "float"
+alias = "h_s0"
+
+# Spherical parameters
+[R]
+value = 6.37122e6
+type = "float"
+alias = "R"
+description = "Radius of earth"
+
+["Ω"]
+value = 7.292e-5
+type = "float"
+alias = "Ω"
+description = "Rotation rate of earth"
+
+[g]
+value = 9.80616
+type = "float"
+alias = "g"
+description = "Gravitational constant"
+
+[v]
+value = 0.0015
+type = "float"
+alias = "v"
+description = "Hyperdiffusion coefficient"
+
+["α"]
+value = 0.0
+type = "float"
+alias = "α"
+description = "angle between the north pole and the center of the top cube panel"
