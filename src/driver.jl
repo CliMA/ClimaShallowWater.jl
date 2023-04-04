@@ -57,7 +57,7 @@ function setup_integrator(
         callback = CallbackSet(output_callback),
     )
 
-    return integrator
+    return (;integrator, time_step, time_end)
 end
 
 
@@ -156,7 +156,7 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
         nprocs = ClimaComms.nprocs(context)
         @info "Setting up experiment" device context testcase float_type panel_size poly_nodes time_step time_end approx_resolution=approx_resolution(space) D₄ = hyperdiffusion_coefficient(space, testcase)
     end
-    setup_integrator(
+    (;integrator, time_step, time_end) = setup_integrator(
         space,
         testcase; 
         time_step,
@@ -168,6 +168,20 @@ end
 
 
 function run(ARGS::Vector{String}=ARGS)
-    integrator = setup_integrator(ARGS)
+    (;integrator, time_step, time_end) = setup_integrator(ARGS)
     solve!(integrator)
+end
+
+function run_using_step(ARGS::Vector{String}=ARGS)
+    (;integrator, time_step, time_end) = setup_integrator(ARGS)
+    n_steps = time_end/time_step
+    t_ave = 0
+    for i in 1:n_steps
+        t_ave += @elapsed begin
+            step!(integrator)
+        end
+    end
+    t_ave = t_ave/n_steps
+    @show t_ave
+
 end
