@@ -176,7 +176,8 @@ function run_using_step(ARGS::Vector{String}=ARGS)
     (;integrator, time_step, time_end) = setup_integrator(ARGS)
     n_steps = time_end/time_step
     t_ave = 0
-    for i in 1:n_steps
+    step!(integrator) # compile first
+    for i in 1:(n_steps-1)
         t_ave += @elapsed begin
             step!(integrator)
         end
