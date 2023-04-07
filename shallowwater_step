@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#=
+JULIA_PROJECT=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+exec julia --project=$JULIA_PROJECT --startup-file=no "$0" "$@"
+=#
+
+using ClimaShallowWater; ClimaShallowWater.run_using_step()
