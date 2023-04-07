@@ -52,11 +52,12 @@ where ``\\alpha`` is the angle between the north pole and the center of the top,
 """
 function coriolis_field(space::Spaces.SpectralElementSpace2D, test::AbstractSphereTestCase)
     coordinates = Fields.coordinate_field(space)
+    FT = Spaces.undertype(space)
     ϕ = coordinates.lat
     λ = coordinates.long
 
-    Ω = test.params.Ω
-    α = test.params.α
+    Ω = FT(test.params.Ω)
+    α = FT(test.params.α)
 
     f = @. Geometry.Contravariant3Vector(Geometry.WVector(2 * Ω * (sind(ϕ) * cosd(α) - cosd(λ) * cosd(ϕ) * sind(α))))
     return f
