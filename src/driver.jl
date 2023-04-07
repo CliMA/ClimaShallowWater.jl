@@ -182,7 +182,7 @@ function run_using_step(ARGS::Vector{String}=ARGS)
             step!(integrator)
         end
     end
-    t_ave = t_ave/n_steps
+    t_ave = t_ave/(n_steps-1)
     @show t_ave
 
 end
