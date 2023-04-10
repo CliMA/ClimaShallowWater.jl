@@ -24,6 +24,9 @@ import ClimaCore:
     DataLayouts,
     InputOutput
 
+# Forward step!
+import DiffEqBase: step!
+step!(integrator) = DiffEqBase.step!(integrator)
 
 include("common.jl")
 include("testcases.jl")
