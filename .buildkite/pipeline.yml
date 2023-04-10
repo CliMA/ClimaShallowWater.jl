@@ -1,7 +1,7 @@
 agents:
   queue: central
   slurm_mem: 8G
-  modules: julia/1.8.5 ucx/1.13.1_cuda-11.2 cuda/11.2 openmpi/4.1.5_cuda-11.2 hdf5/1.14.0-ompi415 nsight-systems/2022.2.1
+  modules: julia/1.8.5 ucx/1.13.1_cuda-11.2 cuda/11.2 openmpi/4.1.5_cuda-11.2 hdf5/1.12.2-ompi415 nsight-systems/2023.2.1
 
 env:
   JULIA_LOAD_PATH: "${JULIA_LOAD_PATH}:${BUILDKITE_BUILD_CHECKOUT_PATH}/.buildkite"
@@ -73,54 +73,22 @@ steps:
       - label: ":flower_playing_cards: :mpi: steady state"
         key: "gpu_mpi_steadystate"
         command:
+          - ": > print-out-0.log"
+          - "tail -F print-out-0.log &" # print log in background
           - >
-            srun --cpu-bind=cores --gpu-bind=per_task:1
-            nsys profile --trace=nvtx,cuda,mpi --mpi-impl=openmpi --output=output/gpu_mpi_steadystate/report-%q{PMI_RANK} 
+            srun --cpu-bind=cores --gpu-bind=none --output=output/gpu_mpi_steadystate/out-%t.log
             ./shallowwater --output-dir=output/gpu_mpi_steadystate
-          - nsys-mkview output/gpu_mpi_steadystate
-          - nsys-archive output/gpu_mpi_steadystate
+          - sleep 1 # give time for log to print
           - ./create-movie --output-dir=output/gpu_mpi_steadystate --filename=output/gpu_mpi_steadystate/out.mp4
+        env:
+          OMPI_MCA_btl_base_verbose: 10
+          OMPI_MCA_pml_base_verbose: 10
+          UCX_LOG_LEVEL: info
         artifact_paths:
+          - output/gpu_mpi_steadystate/out-*
           - output/gpu_mpi_steadystate/nsys.tar.gz
           - output/gpu_mpi_steadystate/out.mp4
         agents:
           slurm_ntasks: 4
           slurm_gpus_per_task: 1
           slurm_cpus_per_task: 2
-
-      - label: ":flower_playing_cards: Mountain"
-        key: "gpu_mountain"
-        command:
-          - ./shallowwater mountain --output-dir=output/gpu_mountain --time-end=172800
-          - ./create-movie --output-dir=output/gpu_mountain --filename=output/gpu_mountain/out.mp4
-        artifact_paths:
-          - output/gpu_mountain/out.mp4
-        agents:
-          slurm_gpus: 1
-
-      - label: ":flower_playing_cards: Rossby-Haurwitz"
-        key: "gpu_rossbyhaurwitz_res"
-        command:
-          - ": > print-out-0.log && tail -F print-out-0.log &" # print log in background
-          - >
-            srun --cpu-bind=cores --gpu-bind=per_task:1 --output=print-out-%t.log
-            julia --check-bounds=yes --project -g 2
-            shallowwater rossbyhaurwitz --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=600 --time-end=172800
-          - sleep 1 # give time for log to print
-          - ./create-movie --output-dir=output/gpu_rossbyhaurwitz_res --filename=output/gpu_rossbyhaurwitz_res/out.mp4
-        artifact_paths:
-          - output/gpu_rossbyhaurwitz_res/out.mp4
-          - print-out-*
-        agents:
-          slurm_ntasks: 4
-          slurm_gpus_per_task: 1
-
-      - label: ":flower_playing_cards: barotropic instability"
-        key: "gpu_barotropicinstability"
-        command:
-          - ./shallowwater barotropicinstability --time-end=1728000 --output-nsteps=20 --output-dir=output/gpu_barotropicinstability
-          - ./create-movie --output-dir=output/gpu_barotropicinstability --filename=output/gpu_barotropicinstability/out.mp4
-        artifact_paths:
-          - output/gpu_barotropicinstability/out.mp4
-        agents:
-          slurm_gpus: 1
