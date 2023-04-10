@@ -20,6 +20,11 @@ steps:
       - "julia --project -e 'using CUDA; CUDA.precompile_runtime()'"
       - "julia --project -e 'using Pkg; Pkg.status()'"
 
+      - echo "--- Instantiate perf"
+      - "julia --project=perf -e 'using Pkg; Pkg.instantiate(;verbose=true)'"
+      - "julia --project=perf -e 'using Pkg; Pkg.precompile()'"
+      - "julia --project=perf -e 'using Pkg; Pkg.status()'"
+
     agents:
       slurm_cpus_per_task: 8
     env:
@@ -124,3 +129,13 @@ steps:
           - output/gpu_barotropicinstability/out.mp4
         agents:
           slurm_gpus: 1
+
+      - label: ":rocket::computer: Flamegraph profile"
+        key: "cpu_flamegraph"
+        command:
+          - "julia --color=yes --project=perf perf/flame.jl"
+        artifact_paths:
+          - "output/*"
+
+      - label: ":rocket::computer: Benchmark"
+        command: "julia --color=yes --project=perf perf/benchmark.jl"
