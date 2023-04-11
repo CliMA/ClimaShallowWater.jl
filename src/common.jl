@@ -3,9 +3,9 @@ abstract type AbstractSphereTestCase end
 function create_space(
     context,
     test::AbstractSphereTestCase;
-    float_type =Float64, 
-    panel_size=9, 
-    poly_nodes=4,
+    float_type = Float64,
+    panel_size = 9,
+    poly_nodes = 4,
 )
     domain = Domains.SphereDomain(float_type(test.params.R))
     mesh = Meshes.EquiangularCubedSphere(domain, panel_size)
@@ -34,7 +34,10 @@ test case `test`.
 
 Set to be a field of zeros if not otherwise defined.
 """
-function surface_height_field(space::Spaces.SpectralElementSpace2D, test::AbstractSphereTestCase)
+function surface_height_field(
+    space::Spaces.SpectralElementSpace2D,
+    test::AbstractSphereTestCase,
+)
     return zeros(space)
 end
 
@@ -50,7 +53,10 @@ f = 2Ω (\\sin(\\phi) \\cos(\\alpha) - \\cos(\\lambda) \\cos(\\phi) \\sin(\\alph
 where ``\\alpha`` is the angle between the north pole and the center of the top, and
 ``\\lambda`` and ``\\phi`` are the longitude and latitude of the grid point.
 """
-function coriolis_field(space::Spaces.SpectralElementSpace2D, test::AbstractSphereTestCase)
+function coriolis_field(
+    space::Spaces.SpectralElementSpace2D,
+    test::AbstractSphereTestCase,
+)
     coordinates = Fields.coordinate_field(space)
     FT = Spaces.undertype(space)
     ϕ = coordinates.lat
@@ -59,11 +65,18 @@ function coriolis_field(space::Spaces.SpectralElementSpace2D, test::AbstractSphe
     Ω = FT(test.params.Ω)
     α = FT(test.params.α)
 
-    f = @. Geometry.Contravariant3Vector(Geometry.WVector(2 * Ω * (sind(ϕ) * cosd(α) - cosd(λ) * cosd(ϕ) * sind(α))))
+    f = @. Geometry.Contravariant3Vector(
+        Geometry.WVector(
+            2 * Ω * (sind(ϕ) * cosd(α) - cosd(λ) * cosd(ϕ) * sind(α)),
+        ),
+    )
     return f
 end
 
-function hyperdiffusion_coefficient(space::Spaces.SpectralElementSpace2D, test::AbstractSphereTestCase)
+function hyperdiffusion_coefficient(
+    space::Spaces.SpectralElementSpace2D,
+    test::AbstractSphereTestCase,
+)
     FT = Spaces.undertype(space)
     ν = test.params.ν
     c = sqrt(test.params.g * test.h0)
@@ -108,7 +121,10 @@ end
 
 Construct the initial state for the test case `test` on the `space` provided.
 """
-function initial_condition(space::Spaces.SpectralElementSpace2D, test::AbstractSphereTestCase)
+function initial_condition(
+    space::Spaces.SpectralElementSpace2D,
+    test::AbstractSphereTestCase,
+)
     h = initial_height(space, test)
     u = initial_velocity(space, test)
     return Fields.FieldVector(h = h, u = u)
