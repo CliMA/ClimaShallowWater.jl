@@ -110,7 +110,7 @@ steps:
           - >
             srun --cpu-bind=cores --gpu-bind=per_task:1 --output=print-out-%t.log
             julia --check-bounds=yes --project -g 2
-            shallowwater rossbyhaurwitz --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=600 --time-end=172800
+            shallowwater rossbyhaurwitz --output-dir=output/gpu_rossbyhaurwitz_res --panel-size=32 --time-step=100 --time-end=172800
           - sleep 1 # give time for log to print
           - ./create-movie --output-dir=output/gpu_rossbyhaurwitz_res --filename=output/gpu_rossbyhaurwitz_res/out.mp4
         artifact_paths:
