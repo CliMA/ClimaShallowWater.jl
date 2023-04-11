@@ -1,11 +1,11 @@
 function setup_integrator(
-    space::Spaces.SpectralElementSpace2D, 
-    test::AbstractSphereTestCase; 
-    time_step=60*6, 
-    time_end=60*60*2,
-    output_nsteps=5,
-    output_dir="output",
-    )
+    space::Spaces.SpectralElementSpace2D,
+    test::AbstractSphereTestCase;
+    time_step = 60 * 6,
+    time_end = 60 * 60 * 2,
+    output_nsteps = 5,
+    output_dir = "output",
+)
 
     Y = initial_condition(space, test)
     p = auxiliary_state(Y, test)
@@ -27,11 +27,17 @@ function setup_integrator(
             NVTX.@range "saving output" begin
                 Y = integrator.u
                 t = integrator.t
-                output_file = joinpath(output_dir, "state_$(string(output_n, pad=6)).hdf5")
+                output_file = joinpath(
+                    output_dir,
+                    "state_$(string(output_n, pad=6)).hdf5",
+                )
                 if ClimaComms.iamroot(context)
-                    @info "Saving state" n=output_n output_file t
-                end            
-                hdfwriter = InputOutput.HDF5Writer(output_file, space.topology.context)
+                    @info "Saving state" n = output_n output_file t
+                end
+                hdfwriter = InputOutput.HDF5Writer(
+                    output_file,
+                    space.topology.context,
+                )
                 InputOutput.HDF5.write_attribute(hdfwriter.file, "time", t)
                 InputOutput.write!(hdfwriter, "Y" => Y)
                 Base.close(hdfwriter)
@@ -43,8 +49,12 @@ function setup_integrator(
         output_callback = nothing
     end
 
-    prob =
-        ODEProblem(ClimaODEFunction(; T_exp! = tendency!), Y, (FT(0), FT(time_end)), p)
+    prob = ODEProblem(
+        ClimaODEFunction(; T_exp! = tendency!),
+        Y,
+        (FT(0), FT(time_end)),
+        p,
+    )
     integrator = DiffEqBase.init(
         prob,
         ExplicitAlgorithm(SSP33ShuOsher()),
@@ -67,48 +77,48 @@ function ismpi()
     #   OMPI_COMM_WORLD_RANK appears to be used by OpenMPI
     return haskey(ENV, "PMI_RANK") || haskey(ENV, "OMPI_COMM_WORLD_RANK")
 end
-function setup_integrator(ARGS::Vector{String}=ARGS)
+function setup_integrator(ARGS::Vector{String} = ARGS)
     CUDA.allowscalar(false)
 
-    s = ArgParseSettings(prog="shallowwater")
+    s = ArgParseSettings(prog = "shallowwater")
 
     @add_arg_table! s begin
         "--device"
-            help = "Computation device (CPU, CUDA)"
-            arg_type = String
-            default = CUDA.functional() ? "CUDA" : "CPU"
+        help = "Computation device (CPU, CUDA)"
+        arg_type = String
+        default = CUDA.functional() ? "CUDA" : "CPU"
         "--comms"
-            help = "Communication type (Singleton, MPI)"
-            arg_type = String
-            default = ismpi() ? "MPI" : "Singleton"
+        help = "Communication type (Singleton, MPI)"
+        arg_type = String
+        default = ismpi() ? "MPI" : "Singleton"
         "--float-type"
-            help = "Floating point type (Float32, Float64)"
-            eval_arg = true
-            default = Float64
+        help = "Floating point type (Float32, Float64)"
+        eval_arg = true
+        default = Float64
         "--panel-size"
-            help = "Number of elements across each panel"
-            arg_type = Int
-            default = 8
+        help = "Number of elements across each panel"
+        arg_type = Int
+        default = 8
         "--poly-nodes"
-            help = "Number of nodes in each dimension to use in the polynomial approximation. Polynomial degree = poly-nodes - 1."
-            arg_type = Int
-            default = 4
+        help = "Number of nodes in each dimension to use in the polynomial approximation. Polynomial degree = poly-nodes - 1."
+        arg_type = Int
+        default = 4
         "--time-step"
-            help = "Time step (seconds)"
-            arg_type = Float64
-            default = Float64(60*6)
+        help = "Time step (seconds)"
+        arg_type = Float64
+        default = Float64(60 * 6)
         "--time-end"
-            help = "End time (seconds)"
-            arg_type = Float64
-            default = Float64(60*60*24*2)
+        help = "End time (seconds)"
+        arg_type = Float64
+        default = Float64(60 * 60 * 24 * 2)
         "--output-nsteps"
-            help = "Number of time steps between saving output"
-            arg_type = Int
-            default = 5
+        help = "Number of time steps between saving output"
+        arg_type = Int
+        default = 5
         "--output-dir"
-            help = "Directory to save output to"
-            arg_type = String
-            default = "output"
+        help = "Directory to save output to"
+        arg_type = String
+        default = "output"
         "testcase"
             help = "Test case to run (SteadyState / SteadyStateCompact / Mountain / RossbyHaurwitz / BarotropicInstability)"
             default = "SteadyState"
@@ -117,19 +127,26 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
     end
     args = parse_args(ARGS, s)
 
-    device = args["device"] == "CUDA" ? ClimaComms.CUDA() : 
-             args["device"] == "CPU" ? ClimaComms.CPU() :
-             error("Unknown device: $(args["device"])")
+    device =
+        args["device"] == "CUDA" ? ClimaComms.CUDA() :
+        args["device"] == "CPU" ? ClimaComms.CPU() :
+        error("Unknown device: $(args["device"])")
 
-    context = args["comms"] == "MPI" ? ClimaCommsMPI.MPICommsContext(device) :
-              args["comms"] == "Singleton" ? ClimaComms.SingletonCommsContext(device) :
-              error("Unknown comms: $(args["comms"])")
+    context =
+        args["comms"] == "MPI" ? ClimaCommsMPI.MPICommsContext(device) :
+        args["comms"] == "Singleton" ?
+        ClimaComms.SingletonCommsContext(device) :
+        error("Unknown comms: $(args["comms"])")
 
     ClimaComms.init(context)
 
     if context isa ClimaCommsMPI.MPICommsContext && device isa ClimaComms.CUDA
         # assign GPUs based on local rank
-        local_comm = MPI.Comm_split_type(context.mpicomm, MPI.COMM_TYPE_SHARED, MPI.Comm_rank(context.mpicomm))
+        local_comm = MPI.Comm_split_type(
+            context.mpicomm,
+            MPI.COMM_TYPE_SHARED,
+            MPI.Comm_rank(context.mpicomm),
+        )
         CUDA.device!(MPI.Comm_rank(local_comm) % length(CUDA.devices()))
     end
 
@@ -154,21 +171,17 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
     time_end = args["time-end"]
 
 
-    space = create_space(
-        context,
-        testcase;
-        float_type,
-        panel_size,
-        poly_nodes,
-    )
+    space = create_space(context, testcase; float_type, panel_size, poly_nodes)
 
     if ClimaComms.iamroot(context)
         nprocs = ClimaComms.nprocs(context)
-        @info "Setting up experiment" device context testcase float_type panel_size poly_nodes time_step time_end approx_resolution=approx_resolution(space) D₄ = hyperdiffusion_coefficient(space, testcase)
+        @info "Setting up experiment" device context testcase float_type panel_size poly_nodes time_step time_end approx_resolution =
+            approx_resolution(space) D₄ =
+            hyperdiffusion_coefficient(space, testcase)
     end
     setup_integrator(
         space,
-        testcase; 
+        testcase;
         time_step,
         time_end,
         output_nsteps = args["output-nsteps"],
@@ -177,7 +190,7 @@ function setup_integrator(ARGS::Vector{String}=ARGS)
 end
 
 
-function run(ARGS::Vector{String}=ARGS)
+function run(ARGS::Vector{String} = ARGS)
     integrator = setup_integrator(ARGS)
     solve!(integrator)
 end

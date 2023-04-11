@@ -53,15 +53,12 @@ Base.@kwdef struct SteadyStateTest{SP} <: AbstractSphereTestCase
     "Physical parameters"
     params::SP = SphericalParameters()
     "advection velocity"
-    u0::Float64 = 2 * pi * params.R / (12*60*60*24) # 1 revolution/12 days
+    u0::Float64 = 2 * pi * params.R / (12 * 60 * 60 * 24) # 1 revolution/12 days
     "peak of analytic height field"
     h0::Float64 = 2.94e4 / params.g
 end
 
-function initial_height(
-    space,
-    test::SteadyStateTest,
-)
+function initial_height(space, test::SteadyStateTest)
     FT = Spaces.undertype(space)
     u0 = FT(test.u0)
     h0 = FT(test.h0)
@@ -73,14 +70,12 @@ function initial_height(
     coordinates = Fields.coordinate_field(space)
     ϕ = coordinates.lat
     λ = coordinates.long
-    h = @. h0 - (R * Ω * u0 + u0^2 / 2) / g *
-        (-cosd(λ) * cosd(ϕ) * sind(α) + sind(ϕ) * cosd(α))^2
+    h = @. h0 -
+       (R * Ω * u0 + u0^2 / 2) / g *
+       (-cosd(λ) * cosd(ϕ) * sind(α) + sind(ϕ) * cosd(α))^2
     return h
 end
-function initial_velocity(
-    space,
-    test::SteadyStateTest,
-)
+function initial_velocity(space, test::SteadyStateTest)
     FT = Spaces.undertype(space)
     u0 = FT(test.u0)
     α = FT(test.params.α)
@@ -95,7 +90,7 @@ function initial_velocity(
     u = @. Geometry.Covariant12Vector(Geometry.UVVector(uλ, uϕ))
     return u
 end
-    
+
 
 
 """
@@ -125,7 +120,10 @@ Base.@kwdef struct SteadyStateCompactTest{SP} <: AbstractSphereTestCase
     xₑ::Float64 = 0.3
 end
 
-function initial_condition(space::Spaces.SpectralElementSpace2D, test::SteadyStateCompactTest)
+function initial_condition(
+    space::Spaces.SpectralElementSpace2D,
+    test::SteadyStateCompactTest,
+)
     FT = Spaces.undertype(space)
     u0 = FT(test.u0)
     h0 = FT(test.h0)
@@ -239,7 +237,10 @@ Base.@kwdef struct MountainTest{SP} <: AbstractSphereTestCase
     h_s0::Float64 = 2e3
 end
 
-function surface_height_field(space::Spaces.SpectralElementSpace2D, test::MountainTest)
+function surface_height_field(
+    space::Spaces.SpectralElementSpace2D,
+    test::MountainTest,
+)
     FT = Spaces.undertype(space)
     a = FT(test.a)
     λc = FT(test.λc)
@@ -284,8 +285,11 @@ Base.@kwdef struct RossbyHaurwitzTest{SP} <: AbstractSphereTestCase
     "vorticity amplitude parameter (1/sec)"
     K::Float64 = 7.848e-6
 end
-    
-function initial_height(space::Spaces.SpectralElementSpace2D, test::RossbyHaurwitzTest)
+
+function initial_height(
+    space::Spaces.SpectralElementSpace2D,
+    test::RossbyHaurwitzTest,
+)
     FT = Spaces.undertype(space)
     a = FT(test.a)
     h0 = FT(test.h0)
@@ -304,7 +308,11 @@ function initial_height(space::Spaces.SpectralElementSpace2D, test::RossbyHaurwi
             ω / 2 * (2 * Ω + ω) * cosd(ϕ)^2 +
             1 / 4 *
             K^2 *
-            ((a + 1) * cosd(ϕ)^(2 * a + 2) + (2 * a^2 - a - 2) * cosd(ϕ)^(2 * a) - 2 * a^2 * cosd(ϕ)^(2 * a - 2))
+            (
+                (a + 1) * cosd(ϕ)^(2 * a + 2) +
+                (2 * a^2 - a - 2) * cosd(ϕ)^(2 * a) -
+                2 * a^2 * cosd(ϕ)^(2 * a - 2)
+            )
         B =
             2 * (Ω + ω) * K / (a + 1) / (a + 2) *
             cosd(ϕ)^a *
@@ -316,7 +324,10 @@ function initial_height(space::Spaces.SpectralElementSpace2D, test::RossbyHaurwi
             (R^2 * A + R^2 * B * cosd(a * λ) + R^2 * C * cosd(2 * a * λ)) / g
     end
 end
-function initial_velocity(space::Spaces.SpectralElementSpace2D, test::RossbyHaurwitzTest)
+function initial_velocity(
+    space::Spaces.SpectralElementSpace2D,
+    test::RossbyHaurwitzTest,
+)
     FT = Spaces.undertype(space)
     a = FT(test.a)
     h0 = FT(test.h0)
@@ -331,7 +342,7 @@ function initial_velocity(space::Spaces.SpectralElementSpace2D, test::RossbyHaur
         ϕ = coord.lat
         λ = coord.long
 
-  
+
         uλ =
             R * ω * cosd(ϕ) +
             R * K * cosd(ϕ)^(a - 1) * (a * sind(ϕ)^2 - cosd(ϕ)^2) * cosd(a * λ)
@@ -345,7 +356,7 @@ function initial_velocity(space::Spaces.SpectralElementSpace2D, test::RossbyHaur
         )
     end
 end
-            
+
 
 
 """
@@ -385,12 +396,19 @@ Base.@kwdef struct BarotropicInstabilityTest{SP} <: AbstractSphereTestCase
     eₙ::Float64 = exp(-4.0 / (deg2rad(ϕ₁) - deg2rad(ϕ₀))^2)
 end
 
-function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest)
+function initial_height(
+    space::Spaces.SpectralElementSpace2D,
+    test::BarotropicInstabilityTest,
+)
     # we need to instantiate the initial height field on the CPU so that we can use quadgk
     initial_height(space, test, Device.device(space))
 end
 
-function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest, ::ClimaComms.CUDA)
+function initial_height(
+    space::Spaces.SpectralElementSpace2D,
+    test::BarotropicInstabilityTest,
+    ::ClimaComms.CUDA,
+)
     mesh = space.topology.mesh
     context = space.topology.context
     if context isa ClimaComms.SingletonCommsContext
@@ -399,7 +417,10 @@ function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicIn
         cpu_context = ClimaComms.MPICommsContext(ClimaComms.CPU())
     end
     cpu_topology = Topologies.Topology2D(cpu_context, mesh)
-    cpu_space = Spaces.SpectralElementSpace2D(cpu_topology, Spaces.quadrature_style(space))
+    cpu_space = Spaces.SpectralElementSpace2D(
+        cpu_topology,
+        Spaces.quadrature_style(space),
+    )
     cpu_h = initial_height(cpu_space, test)
     h = zeros(space)
     copyto!(parent(h), parent(cpu_h))
@@ -408,7 +429,11 @@ end
 
 
 
-function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest, ::ClimaComms.CPU)
+function initial_height(
+    space::Spaces.SpectralElementSpace2D,
+    test::BarotropicInstabilityTest,
+    ::ClimaComms.CPU,
+)
     FT = Spaces.undertype(space)
     u_max = FT(test.u_max)
     αₚ = FT(test.αₚ)
@@ -449,8 +474,7 @@ function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicIn
             (2 * Ω * sind(γ) + uλprime(γ) * tand(γ) / R) * uλprime(γ) : 0.0
 
         # Set initial state for height field
-        h =
-            h0 - (R / g) * (pi / 180.0) * QuadGK.quadgk(h_int, -90.0, ϕprime)[1]
+        h = h0 - (R / g) * (pi / 180.0) * QuadGK.quadgk(h_int, -90.0, ϕprime)[1]
 
         if λ > 0.0
             λ -= 360.0
@@ -466,7 +490,10 @@ function initial_height(space::Spaces.SpectralElementSpace2D, test::BarotropicIn
     end
 end
 
-function initial_velocity(space::Spaces.SpectralElementSpace2D, test::BarotropicInstabilityTest)
+function initial_velocity(
+    space::Spaces.SpectralElementSpace2D,
+    test::BarotropicInstabilityTest,
+)
     FT = Spaces.undertype(space)
     u_max = FT(test.u_max)
     αₚ = FT(test.αₚ)

@@ -1,13 +1,13 @@
 using Documenter, DocumenterCitations
 using ClimaShallowWater
 
-bib =
-    DocumenterCitations.CitationBibliography(joinpath(@__DIR__, "refs.bib"))
+bib = DocumenterCitations.CitationBibliography(joinpath(@__DIR__, "refs.bib"))
 
-makedocs(bib,
+makedocs(
+    bib,
     sitename = "ClimaShallowWater",
     format = Documenter.HTML(),
-    modules = [ClimaShallowWater]
+    modules = [ClimaShallowWater],
 )
 
 Documenter.deploydocs(
