@@ -135,7 +135,7 @@ steps:
         command:
           - "julia --color=yes --project=perf perf/flame.jl"
         artifact_paths:
-          - "output/*"
+          - "perf/output/*"
 
       - label: ":rocket::computer: Benchmark"
         command: "julia --color=yes --project=perf perf/benchmark.jl"
