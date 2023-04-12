@@ -120,6 +120,12 @@ git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 version = "0.4.2"
 
+[[deps.CLIMAParameters]]
+deps = ["DocStringExtensions", "TOML", "Test"]
+git-tree-sha1 = "119ef280867dde6b8a3f351b36b1f5748db12faf"
+uuid = "6eacf6c3-8458-43b9-ae03-caf5306d3d53"
+version = "0.7.5"
+
 [[deps.CPUSummary]]
 deps = ["CpuId", "IfElse", "Static"]
 git-tree-sha1 = "2c144ddb46b552f72d7eafe7cc2f50746e41ea21"
@@ -214,7 +220,7 @@ uuid = "908f55d8-4145-4867-9c14-5dad1a479e4d"
 version = "0.3.1"
 
 [[deps.ClimaShallowWater]]
-deps = ["ArgParse", "CUDA", "CairoMakie", "ClimaComms", "ClimaCommsMPI", "ClimaCore", "ClimaCoreMakie", "ClimaTimeSteppers", "DiffEqBase", "DiffEqCallbacks", "DocStringExtensions", "LinearAlgebra", "MPI", "Makie", "NVTX", "QuadGK"]
+deps = ["ArgParse", "CLIMAParameters", "CUDA", "CairoMakie", "ClimaComms", "ClimaCommsMPI", "ClimaCore", "ClimaCoreMakie", "ClimaTimeSteppers", "DiffEqBase", "DiffEqCallbacks", "DocStringExtensions", "LinearAlgebra", "MPI", "Makie", "NVTX", "QuadGK"]
 path = ".."
 uuid = "77cbd926-740a-4734-9de9-4655503a1911"
 version = "0.1.0"

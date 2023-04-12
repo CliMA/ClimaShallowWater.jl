@@ -1,0 +1,34 @@
+[advection_velocity]
+value = 20.0
+type = "float"
+alias = "advection_velocity"
+description = "peak of analytic height field"
+
+[peak_analytic_height_field]
+value = 5960 
+type = "float"
+alias = "peak_analytic_height_field"
+description = "radius of conical mountain"
+
+[velocity_amplitude]
+value = 20.0 
+type = "float"
+alias = "velocity_amplitude"
+description = """center of mountain long coord, shifted by 180 compared to the paper, 
+    because our ``λ ∈ [-180, 180]`` (in the paper it was 270, with ``λ ∈ [0, 360]``)"""
+[mountain_center_longitude]
+value = 135
+type = "float"
+alias = "mountain_center_longitude"
+description = "latitude coordinate for center of mountain"
+
+[mountain_center_latitude]
+value = 30.0
+type = "float"
+alias = "mountain_center_latitude"
+description = "mountain peak height"
+
+[mountain_peak_height]
+value = 2e3
+type = "float"
+alias = "mountain_peak_height"

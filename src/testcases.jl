@@ -1,3 +1,16 @@
+import CLIMAParameters as CP
+
+function construct_paramset(
+    testcase::Type{T},
+    toml_dict,
+) where {T <: AbstractSphereTestCase}
+    param_names = string.(fieldnames(testcase))
+    parameters = CP.get_parameter_values!(toml_dict, param_names)
+    FT = CP.float_type(toml_dict)
+    spherical_parameters = SphericalParameters(toml_dict)
+    T{FT}(; parameters..., common_parameters = spherical_parameters)
+end
+
 """
     SphericalParameters
 
@@ -6,19 +19,24 @@ Physical parameters needed for all spherical simulations
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct SphericalParameters
+Base.@kwdef struct SphericalParameters{FT}
     "Radius of earth"
-    R::Float64 = 6.37122e6
+    planet_radius::FT
     "Rotation rate of earth"
-    Ω::Float64 = 7.292e-5
+    rotation_rate::FT
     "Gravitational constant"
-    g::Float64 = 9.80616
+    grav::FT
     "Hyperdiffusion coefficient"
-    ν::Float64 = 0.0015
+    hyperdiff_coefficient::FT
     "angle between the north pole and the center of the top cube panel"
-    α::Float64 = 0.0
+    angle_α::FT
 end
-
+function SphericalParameters(toml_dict)
+    param_names = string.(fieldnames(SphericalParameters))
+    parameters = CP.get_parameter_values!(toml_dict, param_names)
+    FT = CP.float_type(toml_dict)
+    SphericalParameters{FT}(; parameters...)
+end
 
 """
     SteadyStateTest()
@@ -34,23 +52,24 @@ panel.
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct SteadyStateTest <: AbstractSphereTestCase
+Base.@kwdef struct SteadyStateTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
+    common_parameters::SphericalParameters{FT}
     "advection velocity"
-    u0::Float64 = 2 * pi * params.R / (12 * 60 * 60 * 24) # 1 revolution/12 days
+    advection_velocity::FT = 2 * pi * common_parameters.planet_radius / (12 * 86400)
+    "constant for computing peak of analytic height field"
+    peak_analytic_height_field_parameter::FT
     "peak of analytic height field"
-    h0::Float64 = 2.94e4 / params.g
+    peak_analytic_height_field::FT = peak_analytic_height_field_parameter / common_parameters.grav
 end
 
 function initial_height(space, test::SteadyStateTest)
-    FT = Spaces.undertype(space)
-    u0 = FT(test.u0)
-    h0 = FT(test.h0)
-    R = FT(test.params.R)
-    Ω = FT(test.params.Ω)
-    g = FT(test.params.g)
-    α = FT(test.params.α)
+    u0 = advection_velocity(test)
+    h0 = peak_analytic_height_field(test)
+    R = planet_radius(test)
+    Ω = rotation_rate(test)
+    g = grav(test)
+    α = angle_α(test)
 
     coordinates = Fields.coordinate_field(space)
     ϕ = coordinates.lat
@@ -61,9 +80,8 @@ function initial_height(space, test::SteadyStateTest)
     return h
 end
 function initial_velocity(space, test::SteadyStateTest)
-    FT = Spaces.undertype(space)
-    u0 = FT(test.u0)
-    α = FT(test.params.α)
+    u0 = advection_velocity(test)
+    α = angle_α(test)
 
     coordinates = Fields.coordinate_field(space)
     ϕ = coordinates.lat
@@ -90,35 +108,36 @@ with compact support.
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct SteadyStateCompactTest{FT, P} <: AbstractSphereTestCase
+Base.@kwdef struct SteadyStateCompactTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
-    "advection velocity"
-    u0::Float64 = 2 * pi * params.R / (12 * 86400)
-    "peak of analytic height field"
-    h0::Float64 = 2.94e4 / params.g
+    common_parameters::SphericalParameters{FT}
     "latitude lower bound for coordinate transformation parameter"
-    ϕᵦ::Float64 = -30.0
+    coord_transform_lower_bound::FT
     "latitude upper bound for coordinate transformation parameter"
-    ϕₑ::Float64 = 90.0
+    coord_transform_upper_bound::FT
     "velocity perturbation parameter"
-    xₑ::Float64 = 0.3
+    velocity_perturbation::FT
+    "advection velocity"
+    advection_velocity::FT = 2 * pi * common_parameters.planet_radius / (12 * 86400)
+    "constant for computing peak of analytic height field"
+    peak_analytic_height_field_parameter::FT
+    "peak of analytic height field"
+    peak_analytic_height_field::FT = peak_analytic_height_field_parameter / common_parameters.grav
 end
 
 function initial_condition(
     space::Spaces.SpectralElementSpace2D,
     test::SteadyStateCompactTest,
 )
-    FT = Spaces.undertype(space)
-    u0 = FT(test.u0)
-    h0 = FT(test.h0)
-    ϕᵦ = FT(test.ϕᵦ)
-    ϕₑ = FT(test.ϕₑ)
-    xₑ = FT(test.xₑ)
-    R = FT(test.params.R)
-    Ω = FT(test.params.Ω)
-    g = FT(test.params.g)
-    α = FT(test.params.α)
+    u0 = advection_velocity(test)
+    h0 = peak_analytic_height_field(test)
+    ϕᵦ = coord_transform_lower_bound(test)
+    ϕₑ = coord_transform_upper_bound(test)
+    xₑ = velocity_perturbation(test)
+    R = planet_radius(test)
+    Ω = rotation_rate(test)
+    g = grav(test)
+    α = angle_α(test)
 
     Y = map(Fields.local_geometry_field(space)) do local_geometry
         coord = local_geometry.coordinates
@@ -204,33 +223,32 @@ a non-uniform reference surface h_s.
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct MountainTest <: AbstractSphereTestCase
+Base.@kwdef struct MountainTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
+    common_parameters::SphericalParameters{FT}
     "advection velocity"
-    u0::Float64 = 20.0
+    advection_velocity::FT
     "peak of analytic height field"
-    h0::Float64 = 5960
+    peak_analytic_height_field::FT
     "radius of conical mountain"
-    a::Float64 = 20.0
+    velocity_amplitude::FT
     "center of mountain long coord, shifted by 180 compared to the paper, 
     because our ``λ ∈ [-180, 180]`` (in the paper it was 270, with ``λ ∈ [0, 360]``)"
-    λc::Float64 = 90.0
+    mountain_center_longitude::FT
     "latitude coordinate for center of mountain"
-    ϕc::Float64 = 30.0
+    mountain_center_latitude::FT
     "mountain peak height"
-    h_s0::Float64 = 2e3
+    mountain_peak_height::FT
 end
 
 function surface_height_field(
     space::Spaces.SpectralElementSpace2D,
     test::MountainTest,
 )
-    FT = Spaces.undertype(space)
-    a = FT(test.a)
-    λc = FT(test.λc)
-    ϕc = FT(test.ϕc)
-    h_s0 = FT(test.h_s0)
+    a = velocity_amplitude(test)
+    λc = mountain_center_longitude(test)
+    ϕc = mountain_center_latitude(test)
+    h_s0 = mountain_peak_height(test)
     map(Fields.coordinate_field(space)) do coord
         ϕ = coord.lat
         λ = coord.long
@@ -240,10 +258,17 @@ function surface_height_field(
 end
 function initial_condition(
     space::Spaces.SpectralElementSpace2D,
-    test::MountainTest,
-)
+    test::MountainTest{FT},
+)   where {FT}
     # steady-state and mountain test cases share the same initial condition
-    initial_condition(space, SteadyStateTest(test.params, test.u0, test.h0))
+    peak_analytic_height_field_parameter = peak_analytic_height_field(test) * grav(test)
+    steady_state_test = SteadyStateTest{FT}(
+        common_parameters(test),
+        advection_velocity(test),
+        peak_analytic_height_field_parameter,
+        peak_analytic_height_field(test)
+    )
+    initial_condition(space, steady_state_test)
 end
 
 
@@ -258,31 +283,30 @@ vorticity equation on the sphere
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct RossbyHaurwitzTest <: AbstractSphereTestCase
+Base.@kwdef struct RossbyHaurwitzTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
+    common_parameters::SphericalParameters{FT}
     "velocity amplitude parameter"
-    a::Float64 = 4.0
+    velocity_amplitude::FT
     "peak of analytic height field"
-    h0::Float64 = 8.0e3
+    peak_analytic_height_field::FT
     "vorticity amplitude parameter (1/sec)"
-    ω::Float64 = 7.848e-6
+    vorticity_amplitude_ω::FT
     "vorticity amplitude parameter (1/sec)"
-    K::Float64 = 7.848e-6
+    vorticity_amplitude_K::FT
 end
 
 function initial_height(
     space::Spaces.SpectralElementSpace2D,
     test::RossbyHaurwitzTest,
 )
-    FT = Spaces.undertype(space)
-    a = FT(test.a)
-    h0 = FT(test.h0)
-    ω = FT(test.ω)
-    K = FT(test.K)
-    R = FT(test.params.R)
-    Ω = FT(test.params.Ω)
-    g = FT(test.params.g)
+    a = velocity_amplitude(test)
+    h0 = peak_analytic_height_field(test)
+    ω = vorticity_amplitude_ω(test)
+    K = vorticity_amplitude_K(test)
+    R = planet_radius(test)
+    Ω = rotation_rate(test)
+    g = grav(test)
 
     map(Fields.local_geometry_field(space)) do local_geometry
         coord = local_geometry.coordinates
@@ -313,14 +337,13 @@ function initial_velocity(
     space::Spaces.SpectralElementSpace2D,
     test::RossbyHaurwitzTest,
 )
-    FT = Spaces.undertype(space)
-    a = FT(test.a)
-    h0 = FT(test.h0)
-    ω = FT(test.ω)
-    K = FT(test.K)
-    R = FT(test.params.R)
-    Ω = FT(test.params.Ω)
-    g = FT(test.params.g)
+    a = velocity_amplitude(test)
+    h0 = peak_analytic_height_field(test)
+    ω = vorticity_amplitude_ω(test)
+    K = vorticity_amplitude_K(test)
+    R = planet_radius(test)
+    Ω = rotation_rate(test)
+    g = grav(test)
 
     map(Fields.local_geometry_field(space)) do local_geometry
         coord = local_geometry.coordinates
@@ -345,7 +368,7 @@ end
 
 
 """
-    BarotropicInstabilityTest{FT, P} <: AbstractSphereTestCase
+    BarotropicInstabilityTest{FT} <: AbstractSphereTestCase
 
 Test case from [Galewsky2004](@cite) (and also §7.6 of [Ullrich2010](@cite)).
 
@@ -357,29 +380,30 @@ structure.
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct BarotropicInstabilityTest <: AbstractSphereTestCase
+Base.@kwdef struct BarotropicInstabilityTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters = SphericalParameters()
+    common_parameters::SphericalParameters{FT}
     "maximum zonal velocity"
-    u_max::Float64 = 80.0
+    max_zonal_velocity::FT
     "mountain shape parameters"
-    αₚ::Float64 = 19.09859
+    mountain_shape_α::FT
     "mountain shape parameters"
-    βₚ::Float64 = 3.81971
+    mountain_shape_β::FT
     "peak of balanced height field from Tempest 
     https://github.com/paullric/tempestmodel/blob/master/test/shallowwater_sphere/BarotropicInstabilityTest.cpp#L86"
-    h0::Float64 = 10158.18617
+    peak_analytic_height_field::FT
     "local perturbation peak height"
-    h_hat::Float64 = 120.0
+    local_perturb_peak_height::FT
     "southern jet boundary"
-    ϕ₀::Float64 = 25.71428
+    southern_jet_boundary::FT
     "northern jet boundary"
-    ϕ₁::Float64 = 64.28571
+    northern_jet_boundary::FT
     "height perturbation peak location"
-    ϕ₂::Float64 = 45.0
-    "zonal velocity decay parameter"
-    eₙ::Float64 = exp(-4.0 / (deg2rad(ϕ₁) - deg2rad(ϕ₀))^2)
+    height_perturbation_peak_location::FT
 end
+
+"zonal velocity decay parameter"
+zonal_velocity_decay(test::BarotropicInstabilityTest) = exp(-4.0 / (deg2rad(northern_jet_boundary(test)) - deg2rad(southern_jet_boundary(test)))^2)
 
 function initial_height(
     space::Spaces.SpectralElementSpace2D,
@@ -419,20 +443,19 @@ function initial_height(
     test::BarotropicInstabilityTest,
     ::ClimaComms.CPU,
 )
-    FT = Spaces.undertype(space)
-    u_max = FT(test.u_max)
-    αₚ = FT(test.αₚ)
-    βₚ = FT(test.βₚ)
-    h0 = FT(test.h0)
-    h_hat = FT(test.h_hat)
-    ϕ₀ = FT(test.ϕ₀)
-    ϕ₁ = FT(test.ϕ₁)
-    ϕ₂ = FT(test.ϕ₂)
-    eₙ = FT(test.eₙ)
-    R = FT(test.params.R)
-    Ω = FT(test.params.Ω)
-    g = FT(test.params.g)
-    α = FT(test.params.α)
+    u_max = max_zonal_velocity(test)
+    αₚ = mountain_shape_α(test)
+    βₚ = mountain_shape_β(test)
+    h0 = peak_analytic_height_field(test)
+    h_hat = local_perturb_peak_height(test)
+    ϕ₀ = southern_jet_boundary(test)
+    ϕ₁ = northern_jet_boundary(test)
+    ϕ₂ = height_perturbation_peak_location(test)
+    eₙ = zonal_velocity_decay(test)
+    R = planet_radius(test)
+    Ω = rotation_rate(test)
+    g = grav(test)
+    α = angle_α(test)
 
     map(Fields.local_geometry_field(space)) do local_geometry
         coord = local_geometry.coordinates
@@ -479,20 +502,19 @@ function initial_velocity(
     space::Spaces.SpectralElementSpace2D,
     test::BarotropicInstabilityTest,
 )
-    FT = Spaces.undertype(space)
-    u_max = FT(test.u_max)
-    αₚ = FT(test.αₚ)
-    βₚ = FT(test.βₚ)
-    h0 = FT(test.h0)
-    h_hat = FT(test.h_hat)
-    ϕ₀ = FT(test.ϕ₀)
-    ϕ₁ = FT(test.ϕ₁)
-    ϕ₂ = FT(test.ϕ₂)
-    eₙ = FT(test.eₙ)
-    R = FT(test.params.R)
-    Ω = FT(test.params.Ω)
-    g = FT(test.params.g)
-    α = FT(test.params.α)
+    u_max = max_zonal_velocity(test)
+    αₚ = mountain_shape_α(test)
+    βₚ = mountain_shape_β(test)
+    h0 = peak_analytic_height_field(test)
+    h_hat = local_perturb_peak_height(test)
+    ϕ₀ = southern_jet_boundary(test)
+    ϕ₁ = northern_jet_boundary(test)
+    ϕ₂ = height_perturbation_peak_location(test)
+    eₙ = zonal_velocity_decay(test)
+    R = planet_radius(test)
+    Ω = rotation_rate(test)
+    g = grav(test)
+    α = angle_α(test)
 
     map(Fields.local_geometry_field(space)) do local_geometry
         coord = local_geometry.coordinates
@@ -521,5 +543,27 @@ function initial_velocity(
             Geometry.UVVector(uλ, uϕ),
             local_geometry,
         )
+    end
+end
+
+# Generate functions for accessing parameters
+for fn in fieldnames(SphericalParameters)
+    @eval $(fn)(ps::SphericalParameters) = ps.$(fn)
+end
+
+common_params(ps::AbstractSphereTestCase) = ps.common_parameters
+
+for paramset in (
+    SteadyStateTest,
+    SteadyStateCompactTest,
+    MountainTest,
+    RossbyHaurwitzTest,
+    BarotropicInstabilityTest,
+)
+    for var in fieldnames(paramset)
+        @eval $(var)(ps::$(paramset)) = ps.$(var)
+    end
+    for var in fieldnames(SphericalParameters)
+        @eval $var(ps::$(paramset)) = $var(common_params(ps))
     end
 end
