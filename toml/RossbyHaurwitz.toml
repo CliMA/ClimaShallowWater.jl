@@ -1,0 +1,23 @@
+[velocity_amplitude]
+value = 4.0
+type = "float"
+alias = "velocity_amplitude"
+description = "velocity amplitude parameter"
+
+[peak_analytic_height_field]
+value = 8.0e3
+type = "float"
+alias = "peak_analytic_height_field"
+description = "peak of analytic height field"
+
+["vorticity_amplitude_ω"]
+value = 7.848e-6
+type = "float"
+alias = "vorticity_amplitude_ω"
+description = "vorticity amplitude parameter (1/sec)"
+
+[vorticity_amplitude_K]
+value = 7.848e-6
+type = "float"
+alias = "vorticity_amplitude_K"
+description = "vorticity amplitude parameter (1/sec)"
