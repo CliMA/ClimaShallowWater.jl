@@ -139,3 +139,6 @@ steps:
 
       - label: ":rocket::computer: Benchmark"
         command: "julia --color=yes --project=perf perf/benchmark.jl"
+
+      - label: ":rocket::computer: Micro Benchmark"
+        command: "julia --color=yes --project=perf perf/micro_benchmark.jl"
