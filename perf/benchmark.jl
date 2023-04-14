@@ -1,3 +1,6 @@
+pkgdir = joinpath(@__DIR__, "..")
+pkgdir in LOAD_PATH || push!(LOAD_PATH, pkgdir)
+
 import ClimaShallowWater as CSW
 using BenchmarkTools
 integrator = CSW.setup_integrator(["--output-nsteps", "0"])
