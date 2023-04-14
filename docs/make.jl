@@ -8,6 +8,12 @@ makedocs(
     sitename = "ClimaShallowWater",
     format = Documenter.HTML(),
     modules = [ClimaShallowWater],
+    pages = [
+        "index.md",
+        "testcases.md",
+        "api.md",
+        "references.md",
+    ]
 )
 
 Documenter.deploydocs(
