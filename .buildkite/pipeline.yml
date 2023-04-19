@@ -94,6 +94,16 @@ steps:
           slurm_gpus_per_task: 1
           slurm_cpus_per_task: 2
 
+      - label: ":flower_playing_cards: Steady State Compact"
+        key: "gpu_steadystatecompact"
+        command:
+          - ./shallowwater steadystatecompact --output-dir=output/gpu_steadystatecompact --time-end=172800
+          - ./create-movie --output-dir=output/gpu_steadystatecompact --filename=output/gpu_steadystatecompact/out.mp4
+        artifact_paths:
+          - output/gpu_steadystatecompact/out.mp4
+        agents:
+          slurm_gpus: 1
+
       - label: ":flower_playing_cards: Mountain"
         key: "gpu_mountain"
         command:

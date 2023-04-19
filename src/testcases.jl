@@ -90,7 +90,7 @@ with compact support.
 # Fields
 $(DocStringExtensions.FIELDS)
 """
-Base.@kwdef struct SteadyStateCompactTest{FT, P} <: AbstractSphereTestCase
+Base.@kwdef struct SteadyStateCompactTest <: AbstractSphereTestCase
     "Physical parameters"
     params::SphericalParameters = SphericalParameters()
     "advection velocity"
