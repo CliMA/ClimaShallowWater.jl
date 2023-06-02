@@ -162,7 +162,7 @@ function setup_integrator(ARGS::Vector{String} = ARGS)
         Symbol(args["testcase"] * "Test"),
     )
     testcase = construct_paramset(testcase_struct, toml_dict)
-    space = create_space(context, testcase; FT, panel_size, poly_nodes)
+    space = create_space(context, testcase; panel_size, poly_nodes)
 
     if ClimaComms.iamroot(context)
         nprocs = ClimaComms.nprocs(context)

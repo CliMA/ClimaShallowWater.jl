@@ -537,6 +537,7 @@ function initial_velocity(
     end
 end
 
+# Generate functions for accessing parameters
 for fn in fieldnames(SphericalParameters)
     @eval $(fn)(ps::SphericalParameters) = ps.$(fn)
 end

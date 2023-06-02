@@ -3,7 +3,6 @@ abstract type AbstractSphereTestCase end
 function create_space(
     context,
     test::AbstractSphereTestCase;
-    FT = Float64,
     panel_size = 9,
     poly_nodes = 4,
 )
