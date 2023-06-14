@@ -8,7 +8,7 @@ function construct_paramset(
     parameters = CP.get_parameter_values!(toml_dict, param_names)
     FT = CP.float_type(toml_dict)
     spherical_parameters = SphericalParameters(toml_dict)
-    T{FT}(; parameters..., params = spherical_parameters)
+    T{FT}(; parameters..., common_parameters = spherical_parameters)
 end
 
 """
