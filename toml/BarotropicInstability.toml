@@ -28,19 +28,19 @@ type = "float"
 alias = "local_perturb_peak_height"
 description = "local perturbation peak height"
 
-["southern_jet_boundary"]
+[southern_jet_boundary]
 value = 25.71428
 type = "float"
 alias = "southern_jet_boundary"
 description = "southern jet boundary"
 
-["northern_jet_boundary"]
+[northern_jet_boundary]
 value = 64.28571
 type = "float"
 alias = "northern_jet_boundary"
 description = "northern jet boundary"
 
-["height_perturbation_peak_location"]
+[height_perturbation_peak_location]
 value = 45.0
 type = "float"
 alias = "height_perturbation_peak_location"

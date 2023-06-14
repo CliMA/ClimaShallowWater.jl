@@ -16,13 +16,13 @@ type = "float"
 alias = "velocity_amplitude"
 description = """center of mountain long coord, shifted by 180 compared to the paper, 
     because our ``λ ∈ [-180, 180]`` (in the paper it was 270, with ``λ ∈ [0, 360]``)"""
-["mountain_center_longitude"]
+[mountain_center_longitude]
 value = 135
 type = "float"
 alias = "mountain_center_longitude"
 description = "latitude coordinate for center of mountain"
 
-["mountain_center_latitude"]
+[mountain_center_latitude]
 value = 30.0
 type = "float"
 alias = "mountain_center_latitude"

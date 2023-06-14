@@ -54,13 +54,14 @@ $(DocStringExtensions.FIELDS)
 """
 Base.@kwdef struct SteadyStateTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters{FT}
+    common_parameters::SphericalParameters{FT}
+    "advection velocity"
+    advection_velocity::FT = 2 * pi * params.planet_radius / (12 * 86400)
+    "constant for computing peak of analytic height field"
+    peak_analytic_height_field_parameter::FT
+    "peak of analytic height field"
+    peak_analytic_height_field::FT = peak_analytic_height_field_parameter / params.grav
 end
-
-"advection velocity"
-advection_velocity(params::SteadyStateTest) = 2 * pi * planet_radius(params) / (12 * 60 * 60 * 24)
-"peak of analytic height field"
-peak_analytic_height_field(params::SteadyStateTest) = 2.94e4 / grav(params)
 
 function initial_height(space, test::SteadyStateTest)
     u0 = advection_velocity(test)
@@ -109,19 +110,20 @@ $(DocStringExtensions.FIELDS)
 """
 Base.@kwdef struct SteadyStateCompactTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters{FT}
+    common_parameters::SphericalParameters{FT}
     "latitude lower bound for coordinate transformation parameter"
     coord_transform_lower_bound::FT
     "latitude upper bound for coordinate transformation parameter"
     coord_transform_upper_bound::FT
     "velocity perturbation parameter"
     velocity_perturbation::FT
+    "advection velocity"
+    advection_velocity::FT = 2 * pi * params.planet_radius / (12 * 86400)
+    "constant for computing peak of analytic height field"
+    peak_analytic_height_field_parameter::FT
+    "peak of analytic height field"
+    peak_analytic_height_field::FT = peak_analytic_height_field_parameter / params.grav
 end
-
-"advection velocity"
-advection_velocity(params::SteadyStateCompactTest) = 2 * pi * planet_radius(params) / (12 * 86400)
-"peak of analytic height field"
-peak_analytic_height_field(params::SteadyStateCompactTest) = 2.94e4 / grav(params)
 
 function initial_condition(
     space::Spaces.SpectralElementSpace2D,
@@ -223,7 +225,7 @@ $(DocStringExtensions.FIELDS)
 """
 Base.@kwdef struct MountainTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters{FT}
+    common_parameters::SphericalParameters{FT}
     "advection velocity"
     advection_velocity::FT
     "peak of analytic height field"
@@ -276,7 +278,7 @@ $(DocStringExtensions.FIELDS)
 """
 Base.@kwdef struct RossbyHaurwitzTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters{FT}
+    common_parameters::SphericalParameters{FT}
     "velocity amplitude parameter"
     velocity_amplitude::FT
     "peak of analytic height field"
@@ -373,7 +375,7 @@ $(DocStringExtensions.FIELDS)
 """
 Base.@kwdef struct BarotropicInstabilityTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
-    params::SphericalParameters{FT}
+    common_parameters::SphericalParameters{FT}
     "maximum zonal velocity"
     max_zonal_velocity::FT
     "mountain shape parameters"
@@ -394,7 +396,7 @@ Base.@kwdef struct BarotropicInstabilityTest{FT} <: AbstractSphereTestCase
 end
 
 "zonal velocity decay parameter"
-zonal_velocity_decay(params::BarotropicInstabilityTest) = exp(-4.0 / (deg2rad(northern_jet_boundary(params)) - deg2rad(southern_jet_boundary(params)))^2)
+zonal_velocity_decay(test::BarotropicInstabilityTest) = exp(-4.0 / (deg2rad(northern_jet_boundary(test)) - deg2rad(southern_jet_boundary(test)))^2)
 
 function initial_height(
     space::Spaces.SpectralElementSpace2D,
@@ -542,7 +544,7 @@ for fn in fieldnames(SphericalParameters)
     @eval $(fn)(ps::SphericalParameters) = ps.$(fn)
 end
 
-spherical_params(ps::AbstractSphereTestCase) = ps.params
+common_params(ps::AbstractSphereTestCase) = ps.common_parameters
 
 for paramset in (
     SteadyStateTest,
@@ -555,6 +557,6 @@ for paramset in (
         @eval $(var)(ps::$(paramset)) = ps.$(var)
     end
     for var in fieldnames(SphericalParameters)
-        @eval $var(ps::$(paramset)) = $var(spherical_params(ps))
+        @eval $var(ps::$(paramset)) = $var(common_params(ps))
     end
 end

@@ -5,7 +5,7 @@ type = "float"
 alias = "planet_radius"
 description = "Radius of earth"
 
-["angular_velocity_planet_rotation"]
+[angular_velocity_planet_rotation]
 value = 7.292e-5
 type = "float"
 alias = "rotation_rate"
