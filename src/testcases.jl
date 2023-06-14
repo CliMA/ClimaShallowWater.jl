@@ -261,7 +261,14 @@ function initial_condition(
     test::MountainTest{FT},
 )   where {FT}
     # steady-state and mountain test cases share the same initial condition
-    initial_condition(space, SteadyStateTest{FT}(params(test)))
+    peak_analytic_height_field_parameter = peak_analytic_height_field(test) * grav(test)
+    steady_state_test = SteadyStateTest{FT}(
+        common_parameters(test),
+        advection_velocity(test),
+        peak_analytic_height_field_parameter,
+        peak_analytic_height_field(test)
+    )
+    initial_condition(space, steady_state_test)
 end
 
 
