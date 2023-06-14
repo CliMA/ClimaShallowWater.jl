@@ -56,11 +56,11 @@ Base.@kwdef struct SteadyStateTest{FT} <: AbstractSphereTestCase
     "Physical parameters"
     common_parameters::SphericalParameters{FT}
     "advection velocity"
-    advection_velocity::FT = 2 * pi * params.planet_radius / (12 * 86400)
+    advection_velocity::FT = 2 * pi * common_parameters.planet_radius / (12 * 86400)
     "constant for computing peak of analytic height field"
     peak_analytic_height_field_parameter::FT
     "peak of analytic height field"
-    peak_analytic_height_field::FT = peak_analytic_height_field_parameter / params.grav
+    peak_analytic_height_field::FT = peak_analytic_height_field_parameter / common_parameters.grav
 end
 
 function initial_height(space, test::SteadyStateTest)
@@ -118,11 +118,11 @@ Base.@kwdef struct SteadyStateCompactTest{FT} <: AbstractSphereTestCase
     "velocity perturbation parameter"
     velocity_perturbation::FT
     "advection velocity"
-    advection_velocity::FT = 2 * pi * params.planet_radius / (12 * 86400)
+    advection_velocity::FT = 2 * pi * common_parameters.planet_radius / (12 * 86400)
     "constant for computing peak of analytic height field"
     peak_analytic_height_field_parameter::FT
     "peak of analytic height field"
-    peak_analytic_height_field::FT = peak_analytic_height_field_parameter / params.grav
+    peak_analytic_height_field::FT = peak_analytic_height_field_parameter / common_parameters.grav
 end
 
 function initial_condition(
