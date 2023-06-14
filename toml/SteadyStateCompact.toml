@@ -1,0 +1,22 @@
+[coord_transform_lower_bound]
+value = -30
+type = "float"
+alias = "coord_transform_lower_bound"
+description = "latitude lower bound for coordinate transformation parameter"
+
+[coord_transform_upper_bound]
+value = -90
+type = "float"
+alias = "coord_transform_upper_bound"
+description = "latitude upper bound for coordinate transformation parameter"
+
+[velocity_perturbation]
+value = 0.3
+type = "float"
+alias = "velocity_perturbation"
+description = "velocity perturbation parameter"
+
+[peak_analytic_height_field_parameter]
+value = 2.94e4
+alias = "peak_analytic_height_field_parameter"
+type = "float"
