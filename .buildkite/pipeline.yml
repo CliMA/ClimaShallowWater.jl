@@ -25,7 +25,18 @@ steps:
       - "julia --project=perf -e 'using Pkg; Pkg.instantiate(;verbose=true)'"
       - "julia --project=perf -e 'using Pkg; Pkg.precompile()'"
       - "julia --project=perf -e 'using Pkg; Pkg.status()'"
+    agents:
+      slurm_cpus_per_task: 8
+    env:
+      JULIA_NUM_PRECOMPILE_TASKS: 8
 
+
+  - label: "custom ClimaCore"
+    key: "initialize"
+    command:
+      - julia --project -e 'using Pkg; Pkg.add(PackageSpec(name="ClimaCore"; rev=ENV["CLIMACORE_REV"]))'
+      - julia --project=perf -e 'using Pkg; Pkg.add(PackageSpec(name="ClimaCore"; rev=ENV["CLIMACORE_REV"]))'
+    if: build.env("CLIMACORE_REV") != null
     agents:
       slurm_cpus_per_task: 8
     env:
