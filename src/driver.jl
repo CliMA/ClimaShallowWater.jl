@@ -79,7 +79,6 @@ function ismpi()
 end
 function setup_integrator(ARGS::Vector{String} = ARGS)
     CUDA.allowscalar(false)
-
     s = ArgParseSettings(prog = "shallowwater")
 
     @add_arg_table! s begin
@@ -120,11 +119,12 @@ function setup_integrator(ARGS::Vector{String} = ARGS)
         arg_type = String
         default = "output"
         "testcase"
-        help = "Test case to run (steadystate / steadystatecompact / mountain / rossbyhaurwitz / barotropicinstability)"
-        default = "steadystate"
+        help = "Test case to run (SteadyState / SteadyStateCompact / Mountain / RossbyHaurwitz / BarotropicInstability)"
+        default = "SteadyState"
+        "--toml"
+        arg_type = String
     end
     args = parse_args(ARGS, s)
-
     device =
         args["device"] == "CUDA" ? ClimaComms.CUDA() :
         args["device"] == "CPU" ? ClimaComms.CPU() :
@@ -148,26 +148,25 @@ function setup_integrator(ARGS::Vector{String} = ARGS)
         CUDA.device!(MPI.Comm_rank(local_comm) % length(CUDA.devices()))
     end
 
-    testcase =
-        args["testcase"] == "steadystate" ? SteadyStateTest() :
-        args["testcase"] == "steadystatecompact" ? SteadyStateCompactTest() :
-        args["testcase"] == "mountain" ? MountainTest() :
-        args["testcase"] == "rossbyhaurwitz" ? RossbyHaurwitzTest() :
-        args["testcase"] == "barotropicinstability" ?
-        BarotropicInstabilityTest() :
-        error("Unknown testcase: $(args["testcase"])")
-    float_type = args["float-type"]
+    FT = args["float-type"]
     panel_size = args["panel-size"]
     poly_nodes = args["poly-nodes"]
     time_step = args["time-step"]
     time_end = args["time-end"]
 
-
-    space = create_space(context, testcase; float_type, panel_size, poly_nodes)
+    toml_path = !isnothing(args["toml"]) ? args["toml"] : joinpath(@__DIR__, "..", "toml", args["testcase"] * ".toml")
+    override_dict = CP.merge_toml_files([toml_path, "toml/Sphere.toml"])
+    toml_dict = CP.create_toml_dict(FT, override_file = override_dict)
+    testcase_struct = getproperty(
+        ClimaShallowWater,
+        Symbol(args["testcase"] * "Test"),
+    )
+    testcase = construct_paramset(testcase_struct, toml_dict)
+    space = create_space(context, testcase; panel_size, poly_nodes)
 
     if ClimaComms.iamroot(context)
         nprocs = ClimaComms.nprocs(context)
-        @info "Setting up experiment" device context testcase float_type panel_size poly_nodes time_step time_end approx_resolution =
+        @info "Setting up experiment" device context testcase FT panel_size poly_nodes time_step time_end approx_resolution =
             approx_resolution(space) D₄ =
             hyperdiffusion_coefficient(space, testcase)
     end

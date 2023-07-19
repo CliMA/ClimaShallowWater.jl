@@ -3,11 +3,10 @@ abstract type AbstractSphereTestCase end
 function create_space(
     context,
     test::AbstractSphereTestCase;
-    float_type = Float64,
     panel_size = 9,
     poly_nodes = 4,
 )
-    domain = Domains.SphereDomain(float_type(test.params.R))
+    domain = Domains.SphereDomain(planet_radius(test))
     mesh = Meshes.EquiangularCubedSphere(domain, panel_size)
     quad = Spaces.Quadratures.GLL{poly_nodes}()
     topology = Topologies.Topology2D(context, mesh)
@@ -62,8 +61,8 @@ function coriolis_field(
     ϕ = coordinates.lat
     λ = coordinates.long
 
-    Ω = FT(test.params.Ω)
-    α = FT(test.params.α)
+    Ω = rotation_rate(test)
+    α = angle_α(test)
 
     f = @. Geometry.Contravariant3Vector(
         Geometry.WVector(
@@ -78,8 +77,8 @@ function hyperdiffusion_coefficient(
     test::AbstractSphereTestCase,
 )
     FT = Spaces.undertype(space)
-    ν = test.params.ν
-    c = sqrt(test.params.g * test.h0)
+    ν = hyperdiff_coefficient(test)
+    c = sqrt(grav(test) * peak_analytic_height_field(test))
     D₄ = ν * c * approx_resolution(space)^3
     return FT(D₄)
 end
@@ -98,7 +97,7 @@ function auxiliary_state(Y, test::AbstractSphereTestCase)
     u_buffer = Spaces.create_dss_buffer(u)
 
     D₄ = hyperdiffusion_coefficient(space, test)
-    (; g = FT(test.params.g), D₄, f, h_s, h_buffer, u_buffer)
+    (; g = grav(test), D₄, f, h_s, h_buffer, u_buffer)
 end
 
 function dss!(Y, p)

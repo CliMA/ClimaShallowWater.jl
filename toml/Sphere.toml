@@ -1,0 +1,30 @@
+# Spherical parameters
+[planet_radius]
+value = 6.37122e6
+type = "float"
+alias = "planet_radius"
+description = "Radius of earth"
+
+[angular_velocity_planet_rotation]
+value = 7.292e-5
+type = "float"
+alias = "rotation_rate"
+description = "Rotation rate of earth"
+
+[gravitational_acceleration]
+value = 9.80616
+type = "float"
+alias = "grav"
+description = "Gravitational constant"
+
+[hyperdiff_coefficient]
+value = 0.0015
+type = "float"
+alias = "hyperdiff_coefficient"
+description = "Hyperdiffusion coefficient"
+
+["angle_α"]
+value = 0.0
+type = "float"
+alias = "angle_α"
+description = "angle between the north pole and the center of the top cube panel"
