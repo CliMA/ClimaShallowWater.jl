@@ -142,31 +142,33 @@ function tendency!(dYdt, y, p, t)
         curl = Operators.Curl()
         wcurl = Operators.WeakCurl()
 
-        # Compute Laplacians of h and u
-        NVTX.@range "hyperdiffusion" begin
-            @. dYdt.h = wdiv(grad(y.h))
-            @. dYdt.u =
-                wgrad(div(y.u)) - Geometry.Covariant12Vector(
-                    wcurl(Geometry.Covariant3Vector(curl(y.u))),
-                )
-
-            dss!(dYdt, p)
-        end
-
-        NVTX.@range "tendency" begin
-            @. dYdt.h = -D₄ * wdiv(grad(dYdt.h))
-            # split to avoid "device kernel image is invalid (code 200, ERROR_INVALID_IMAGE)"
-            @. dYdt.u =
-                wgrad(div(dYdt.u)) - Geometry.Covariant12Vector(
-                    wcurl(Geometry.Covariant3Vector(curl(dYdt.u))),
-                )
-            @. dYdt.u = -D₄ * dYdt.u
-            @. begin
-                dYdt.h += -wdiv(y.h * y.u)
-                dYdt.u += -grad(g * (y.h + h_s) + norm(y.u)^2 / 2) #+
-                dYdt.u += y.u × (f + curl(y.u))
+        @sync begin
+            @async begin
+                NVTX.@range "u" begin
+                    @. dYdt.u =
+                        wgrad(div(y.u)) - Geometry.Covariant12Vector(
+                            wcurl(Geometry.Covariant3Vector(curl(y.u))),
+                        )
+                    Spaces.weighted_dss!(dYdt.u, p.u_buffer)
+                    @. dYdt.u =
+                        wgrad(div(dYdt.u)) - Geometry.Covariant12Vector(
+                            wcurl(Geometry.Covariant3Vector(curl(dYdt.u))),
+                        )
+                    @. dYdt.u = -D₄ * dYdt.u
+                    @. dYdt.u += -grad(g * (y.h + h_s) + norm(y.u)^2 / 2) #+
+                    @. dYdt.u += y.u × (f + curl(y.u))
+                    Spaces.weighted_dss!(dYdt.u, p.u_buffer)
+                end
             end
-            dss!(dYdt, p)
+            @async begin
+                NVTX.@range "h" begin
+                    @. dYdt.h = wdiv(grad(y.h))
+                    Spaces.weighted_dss!(dYdt.h, p.h_buffer)
+                    @. dYdt.h = -D₄ * wdiv(grad(dYdt.h))
+                    @. dYdt.h += -wdiv(y.h * y.u)
+                    Spaces.weighted_dss!(dYdt.h, p.h_buffer)
+                end
+            end
         end
     end
     return dYdt
