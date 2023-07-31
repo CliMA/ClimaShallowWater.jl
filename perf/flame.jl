@@ -1,3 +1,5 @@
+pkgdir = joinpath(@__DIR__, "..")
+pkgdir in LOAD_PATH || push!(LOAD_PATH, pkgdir)
 import Profile
 import ClimaShallowWater as CSW
 
